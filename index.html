@@ -984,7 +984,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
   <tr><td><b>Fluid</b></td><td>An incompressible fluid (advection, pressure, vorticity). Moving the mouse pushes the fluid, which drags the image along and leaves ink.</td><td><b>Swirl</b> adds curling eddies. <b>Self-stirring</b> keeps it moving without a mouse. Choose <i>Ink only</i> for smoke on top of a sharp image, or <i>Distort only</i> for invisible liquid.</td></tr>
   <tr><td><b>Water surface</b></td><td>The wave equation: ripples travel, interfere and bounce off the frame edges. The surface refracts the image below and catches highlights.</td><td><b>Wave persistence</b> sets how long waves last. <b>Raindrops</b> adds random drops on its own. Hold the mouse button for bigger waves.</td></tr>
   <tr><td><b>Jelly</b></td><td>A spring-mass sheet. Each point is pulled back to rest by a spring and connected to its neighbours, so pushes travel outward as wobbling waves.</td><td><b>Drag along</b> smears with the cursor; <b>Push away</b> / <b>Pull in</b> act while moving or holding the button. Lower <b>Damping</b> = more wobble; raise <b>Spread</b> for bigger waves.</td></tr>
-  <tr><td><b>Particles</b></td><td>Up to 262,144 particles with forces, friction, springs, flow fields, gravity and bouncing.</td><td><b>Reassemble image</b> turns everything below into particles that scatter and spring back — put text on a dark background below it and raise <b>Skip dark pixels</b> to make only the text into particles. <b>Return to shape</b> sets how hard they’re pulled home and <b>Overshoot</b> how much they swing past before settling (0 = straight home). <b>Swarm</b> drifts through a flow field; <b>Gravity</b> rains and bounces — <b>Bounce</b> is how much particles rebound off the floor and walls there. Settings that don’t apply to the chosen Behaviour are hidden. With <b>Hide original</b> off, particles draw on top of the image instead of replacing it. With it on, <b>Behind particles</b> chooses what fills the gaps: <i>Transparent</i> (layers outside the group still show) or a <i>Colour</i>. Particles are spaced evenly to match the frame’s shape, and invisible ones are skipped, so they’re cheaper than before.</td></tr>
+  <tr><td><b>Particles</b></td><td>Up to 262,144 particles with forces, friction, springs, flow fields, gravity and bouncing.</td><td><b>Reassemble image</b> turns everything below into particles that scatter and spring back — put text on a dark background below it and raise <b>Skip dark pixels</b> to make only the text into particles. <b>Mouse: Restore</b> (any behaviour — in Reassemble it matters when a Flow field keeps the particles stirred up) turns the cursor into a brush that restores the image wherever it passes: the particles that belong there fly back to their place from wherever they are — paint the picture back together (Mouse force, Radius and Falloff set how hard, wide and soft the brush is). With <b>Stay restored</b> on they stay put once home, so you can sweep the whole image back; off, they drift or fall away again after the cursor leaves. For Repel, Attract and Swirl, <b>After the mouse passes</b> chooses whether particles <b>Return to their spot</b> or <b>Stay where moved</b>. In Reassemble they return to their place in the image (<b>Return strength</b> sets how hard they’re pulled, <b>Overshoot</b> how much they swing past before settling); <b>Swarm</b> drifts through a flow field, and returning particles glide back onto their path (<b>Return speed</b>). <b>Gravity</b> rains and bounces — <b>Bounce</b> is how much particles rebound off the floor and walls there. Settings that don’t apply to the chosen Behaviour are hidden. With <b>Hide original</b> off, particles draw on top of the image instead of replacing it. With it on, <b>Behind particles</b> chooses what fills the gaps: <i>Transparent</i> (layers outside the group still show) or a <i>Colour</i>. Particles are spaced evenly to match the frame’s shape, and invisible ones are skipped, so they’re cheaper than before.</td></tr>
 </table>
 <ul>
   <li>Everything with a radius has a <b>Falloff</b>; force-type settings work well bound to <b>Mouse speed</b> or <b>Mouse button held</b>.</li>
@@ -1849,7 +1849,9 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
   };
 
   /* ---- Physics: GPU simulations that keep state between frames ---- */
-  var PT_HOME = function (p) { return !(+p.mode > 0); }, PT_GRAV = function (p) { return +p.mode === 2; };
+  var PT_HOME = function (p) { return !(+p.mode > 0); }, PT_GRAV = function (p) { return +p.mode === 2; }, PT_SWARM = function (p) { return +p.mode === 1; }, PT_RET = function (p) { return !(+p.mode > 1); };
+  // Restore: the cursor is a brush that puts scattered particles back into the image (scattered by Swarm, Gravity, or a flow field in Reassemble).
+  var PT_MOUSE_OPTS = [['Repel', 0], ['Attract', 1], ['Swirl', 2], ['Restore (pull back into the image)', 3]];
   var PHYSICS = {
     //@fx:fluid
     fluid: {
@@ -1990,15 +1992,20 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
     particles: {
       name: 'Particles', cat: 'Physics', filter: true, mouse: true, particles: true,
       desc: 'Up to 262,144 GPU particles. Break the image below into particles that scatter and reassemble, swarm through a flow field, or fall and bounce with gravity.',
-      sim: { steps: 1 },
+      sim: { steps: 1, precise: true },
       params: [GP('Settings', S('mode', 'Behaviour', [['Reassemble image', 0], ['Swarm', 1], ['Gravity', 2]], 0), null, true),
         S('count', 'Particles', [['4,096', 64], ['16,384', 128], ['65,536', 256], ['262,144', 512]], 128),
         R('size', 'Size (px, 0 = auto)', 0, 24, 0), B('useImage', 'Colours from image', true), C('color', 'Colour', '#ffffff'),
         R('threshold', 'Skip dark pixels', 0, 1, 0.06),
-        S('mouseMode', 'Mouse', [['Repel', 0], ['Attract', 1], ['Swirl', 2]], 0),
+        GP('Settings', S('mouseMode', 'Mouse', PT_MOUSE_OPTS, 0), null, true),
+        GP('Settings', B('stay', 'Stay restored', false), function (p) { return +p.mouseMode === 3; }, false,
+          'Off: restored particles drift or fall away again once the cursor leaves. On: they stay in place, so you can sweep the whole image back together.'),
+        GP('Settings', S('after', 'After the mouse passes', [['Return to their spot', 1], ['Stay where moved', 0]], 1), function (p) { return PT_RET(p) && +p.mouseMode !== 3; }, true,
+          'Whether particles the mouse repels, attracts or swirls glide back to their spot once it has passed (in their place in the image for Reassemble, on their path for Swarm), or stay where it leaves them.'),
+        GP('Settings', R('ret', 'Return speed', 0.1, 3, 1), function (p) { return +p.mode === 1 && +p.after !== 0 && +p.mouseMode !== 3; }, false, 'How quickly disturbed particles glide back.'),
+        GP('Settings', R('spring', 'Return strength', 0, 2, 0.6), function (p) { return PT_HOME(p) && +p.after !== 0; }, false, 'How strongly particles are pulled back to their place in the image.'),
+        GP('Settings', R('overshoot', 'Overshoot', 0, 1, 0.5), function (p) { return PT_HOME(p) && +p.after !== 0; }, false, 'How much particles swing past their place before settling. 0 = glide straight home, no overshoot; 1 = very springy.'),
         R('force', 'Mouse force', 0, 3, 1), R('radius', 'Radius', 0.02, 1, 0.15), R('falloff', 'Falloff', 0, 1, 0.6),
-        GP('Settings', R('spring', 'Return to shape', 0, 2, 0.6), PT_HOME, false, 'How strongly particles are pulled back to their place in the image.'),
-        GP('Settings', R('overshoot', 'Overshoot', 0, 1, 0.5), PT_HOME, false, 'How much particles swing past their place before settling. 0 = glide straight home, no overshoot; 1 = very springy.'),
         R('friction', 'Friction', 0, 1, 0.35), R('flow', 'Flow field', 0, 3, 0),
         GP('Settings', R('gravity', 'Gravity', 0, 3, 1), PT_GRAV), GP('Settings', R('bounce', 'Bounce', 0, 1, 0.5), PT_GRAV, false, 'How much particles bounce off the floor and side walls (Gravity behaviour).'),
         R('speedGlow', 'Speed glow', 0, 1, 0),
@@ -2014,24 +2021,59 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
         'vec4 stateFn(vec2 uv){',
         '  vec2 home = homeOf(uv);',
         '  vec2 asp = vec2(uFrameRes.x / uFrameRes.y, 1.0);',
-        '  if (uInit > 0.5) return vec4(p_mode < 0.5 ? home : vec2(hash12(uv * 913.7), hash12(uv * 417.3 + 3.1)), 0.0, 0.0);',
+        // (A tiny starting speed marks particles as "not yet restored", so Stay restored only locks ones the brush has put back.)
+        '  if (uInit > 0.5) return vec4(p_mode < 0.5 ? home : vec2(hash12(uv * 913.7), hash12(uv * 417.3 + 3.1)), 1e-6, 0.0);',
         '  vec4 s = texture(uPrev, uv); vec2 pos = s.xy, vel = s.zw;',
         '  float dt = clamp(uDt, 0.0, 1.0 / 30.0);',
+        // Swarm with "Return after mouse": the state is (resting position drifting with the flow, displacement by the mouse).
+        '  bool keep = p_mode > 0.5 && p_mode < 1.5 && p_after > 0.5 && p_mouseMode < 2.5;',
+        '  vec2 base = pos, off = vel;',
+        '  if (keep) pos = base + off;',
         '  vec2 d = (pos - uMouse) * asp; float dist = length(d);',
         '  float br = falloff(dist, p_radius, p_falloff);',
         '  vec2 dir = dist > 1e-5 ? d / dist : vec2(0.0);',
-        '  vec2 m = p_mouseMode < 0.5 ? dir : p_mouseMode < 1.5 ? -dir : vec2(-dir.y, dir.x);',
+        '  bool restore = p_mouseMode > 2.5;',
+        '  vec2 m = p_mouseMode < 0.5 ? dir : p_mouseMode < 1.5 ? -dir : p_mouseMode < 2.5 ? vec2(-dir.y, dir.x) : vec2(0.0);',
         '  vec2 F = m / asp * br * p_force * 6.0 * (1.0 + uPress * 2.0);',
-        '  F += uMouseVel * 60.0 * br * p_force * 3.0;',
+        '  if (!restore) F += uMouseVel * 60.0 * br * p_force * 3.0;',
+        // Restore: the cursor is a brush that pulls particles back to their place in the image (critically damped, no overshoot).
+        // With "Stay restored", a particle that has settled at home stays locked there.
+        // The brush acts on particles whose *home* is under the cursor, so they fly in from wherever they are and the
+        // picture reappears exactly where you brush.
+        '  float bh = restore ? falloff(length((home - uMouse) * asp), p_radius, p_falloff) : 0.0;',
+        '  if (restore) {',
+        // Locked: snapped exactly onto home (only the snap below produces an exact match with zero speed).
+        '    if (p_stay > 0.5 && pos == home && vel == vec2(0.0)) return vec4(home, 0.0, 0.0);',
+        '    float k = 40.0 * p_force * bh;',
+        '    F += (home - pos) * k - vel * 2.0 * sqrt(k + 1e-4);',
+        '  }',
+        // Inside the brush the flow and gravity are held off completely (fully at half strength and above), and they fade out
+        // as a particle nears home — so the pull home wins the last stretch instead of balancing a little short of it.
+        '  float dh = length((home - pos) * asp);',
+        '  float hold = restore ? (1.0 - smoothstep(0.0, 0.5, bh)) * mix(1.0, smoothstep(0.0, 0.03, dh), step(0.001, bh)) : 1.0;',
+        '  vec2 Fm = F;',
         // Damped spring home: Overshoot sets the damping relative to critical (0 = critically damped, no overshoot).
-        '  if (p_mode < 0.5) { float k = p_spring * 30.0; F += (home - pos) * k - vel * 2.0 * sqrt(k) * mix(1.0, 0.05, clamp(p_overshoot, 0.0, 1.0)); }',
+        '  if (p_mode < 0.5 && p_after > 0.5) { float k = p_spring * 30.0; F += (home - pos) * k - vel * 2.0 * sqrt(k) * mix(1.0, 0.05, clamp(p_overshoot, 0.0, 1.0)); }',
+        '  vec2 Fx = vec2(0.0);', // forces pushing away from home (flow, gravity): used to decide when snapping is safe
         '  if (p_flow > 0.0) { vec2 q = pos * asp * 2.5; float e = 0.01, t = uTime * 0.2;',
         '    float n0 = snoise(vec3(q, t)), nx = snoise(vec3(q + vec2(e, 0.0), t)), ny = snoise(vec3(q + vec2(0.0, e), t));',
-        '    F += vec2(ny - n0, -(nx - n0)) / e / asp * p_flow * 0.25; }',
-        '  if (p_mode > 1.5) F.y -= p_gravity * 3.0;',
+        '    Fx = vec2(ny - n0, -(nx - n0)) / e / asp * p_flow * 0.25 * hold; F += Fx; }',
+        '  if (keep) {',
+        // The resting position follows the flow field; the mouse only displaces, and the displacement eases back to zero.
+        '    base = fract(base + (F - Fm) * dt * 0.4);',
+        '    off += Fm * dt * 0.05;',
+        '    off *= exp(-p_ret * 3.0 * dt);',
+        '    return vec4(base, off);',
+        '  }',
+        '  if (p_mode > 1.5) { F.y -= p_gravity * 3.0 * hold; Fx.y -= p_gravity * 3.0 * hold; }',
         '  vel += F * dt;',
         '  vel *= pow(1.0 - clamp(p_friction, 0.0, 0.99), dt * 6.0);',
         '  pos += vel * dt;',
+        // Snap: once a homing particle is within about half a pixel and nearly still, put it exactly on its spot.
+        // Only when the pull home clearly wins: if the flow/gravity left over would hold the particle more than about half a
+        // pixel away anyway, it isn't snapped (so a flow field can still stir particles in Reassemble).
+        '  float kh = (p_mode < 0.5 && p_after > 0.5 ? p_spring * 30.0 : 0.0) + (restore ? 40.0 * p_force * bh : 0.0);',
+        '  if (kh > 0.0 && length(Fx / kh * uFrameRes) < 0.5 && length((home - pos) * uFrameRes) < 0.6 && length(vel * uFrameRes) < 6.0) { pos = home; vel = vec2(0.0); }',
         '  if (p_mode > 0.5 && p_mode < 1.5) pos = fract(pos);',
         '  if (p_mode > 1.5) {',
         '    if (pos.y < 0.0) { pos.y = -pos.y; vel.y = abs(vel.y) * p_bounce; vel.x *= 0.9;',
@@ -2528,6 +2570,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
       if (L.type === 'effect' && L.effect === 'particles' && L.params && !('bgMode' in L.params)) L.params.bgMode = depth === 0 ? 1 : 0;
       // Before 1.5 the spring home had no damping of its own (≈ Overshoot 1); keep older scenes looking the same.
       if (L.type === 'effect' && L.effect === 'particles' && L.params && !('overshoot' in L.params)) L.params.overshoot = 1;
+      if (L.type === 'effect' && L.effect === 'particles' && L.params && !('after' in L.params)) L.params.after = +L.params.mode === 1 && !(+L.params.ret > 0) ? 0 : 1;
       if (L.type !== 'effect' || L.effect !== 'blackHole') return;
       var o = L.params || {}, n = defaultsFor('gravityLens');
       var g = function (k, d) { return o[k] == null ? d : o[k]; };
@@ -2727,7 +2770,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
     '#version 300 es',
     'precision highp float;',
     'uniform sampler2D uP; uniform sampler2D uImg; uniform vec4 uImgView; uniform int uSide; uniform float uSize; uniform float uUseImage; uniform float uMode;',
-    'uniform vec3 uColor; uniform float uThreshold; uniform float uSpeedGlow; uniform float uAspect;',
+    'uniform vec3 uColor; uniform float uThreshold; uniform float uSpeedGlow; uniform float uAspect; uniform float uOffsetMode;',
     'out vec4 vCol; out float vSize;',
     'void main(){',
     '  ivec2 ij = ivec2(gl_VertexID % uSide, gl_VertexID / uSide);',
@@ -2735,6 +2778,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
     '  float idx = float(ij.y) * side + float(ij.x);',
     '  vec2 tc = vec2((mod(idx, cols) + 0.5) / cols, (floor(idx / cols) + 0.5) / rows);',
     '  vec4 s = texelFetch(uP, ij, 0);',
+    '  if (uOffsetMode > 0.5) { s.xy += s.zw; s.zw *= 3.0; }', // swarm with return: resting position + mouse displacement
     '  gl_Position = vec4(s.xy * 2.0 - 1.0, 0.0, 1.0);',
     '  gl_PointSize = uSize; vSize = uSize;',
     '  vec4 img = texture(uImg, ((uMode < 0.5 ? tc : clamp(s.xy, 0.0, 1.0)) - uImgView.xy) / uImgView.zw);',
@@ -4845,10 +4889,12 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
     var gl = this.gl;
     var tex = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, tex);
-    if (float && this.halfFloat) gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, w, h, 0, gl.RGBA, gl.HALF_FLOAT, null);
+    var precise = float === 'precise' && this.halfFloat;
+    if (precise) gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, w, h, 0, gl.RGBA, gl.FLOAT, null);
+    else if (float && this.halfFloat) gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, w, h, 0, gl.RGBA, gl.HALF_FLOAT, null);
     else gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, precise ? gl.NEAREST : gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, precise ? gl.NEAREST : gl.LINEAR);
     var wrap = clampEdges ? gl.CLAMP_TO_EDGE : gl.MIRRORED_REPEAT;
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, wrap);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, wrap);
@@ -5101,7 +5147,8 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
     var st = this.states[E.id];
     if (!st || st.w !== sw || st.h !== sh || st.key !== key) {
       if (st) this._freeState(st);
-      st = this.states[E.id] = { a: this._target(sw, sh, true, [0, 0, 0, 0], true), b: this._target(sw, sh, true, [0, 0, 0, 0], true), w: sw, h: sh, key: key, init: true };
+      var fl = d.sim.precise ? 'precise' : true; // particle positions need full 32-bit precision to land exactly
+      st = this.states[E.id] = { a: this._target(sw, sh, fl, [0, 0, 0, 0], true), b: this._target(sw, sh, fl, [0, 0, 0, 0], true), w: sw, h: sh, key: key, init: true };
     }
     if (st.last != null && this.frame - st.last > 1) st.init = true;
     st.last = this.frame;
@@ -5168,6 +5215,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
     gl.uniform1f(pr.u('uSize'), Math.max(1, Math.min(size, this.pointMax || 64)));
     gl.uniform1f(pr.u('uUseImage'), P.useImage === false ? 0 : 1);
     gl.uniform1f(pr.u('uMode'), +P.mode || 0);
+    gl.uniform1f(pr.u('uOffsetMode'), +P.mode === 1 && +P.after !== 0 && +P.mouseMode !== 3 ? 1 : 0);
     gl.uniform3fv(pr.u('uColor'), hexToRgb(P.color || '#ffffff'));
     gl.uniform1f(pr.u('uThreshold'), P.threshold == null ? 0.06 : +P.threshold);
     gl.uniform1f(pr.u('uSpeedGlow'), +P.speedGlow || 0);
@@ -7068,7 +7116,12 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
     if (pd.type === 'range') ctl = rangeCtl({ min: resolve(pd.min, l), max: resolve(pd.max, l), step: pd.step }, value, set);
     else if (pd.type === 'color') ctl = colorCtl(value, set);
     else if (pd.type === 'bool') ctl = toggleCtl(value, function (v, c) { set(v, c); });
-    else if (pd.type === 'select') ctl = selectCtl(pd.options, value, set);
+    else if (pd.type === 'select') {
+      var opts = typeof pd.options === 'function' ? pd.options(l && l.params || {}) : pd.options;
+      // A choice that no longer applies (e.g. Restore after switching to Reassemble) falls back to the first option.
+      if (typeof pd.options === 'function' && !opts.some(function (o) { return String(o[1]) === String(value); })) { value = opts[0][1]; put(value); R.setScene(scene); }
+      ctl = selectCtl(opts, value, set);
+    }
     var reset = pd.def !== undefined ? function () { put(pd.def); changed(true); renderInspector(); } : null;
     // On a breakpoint, a setting changed for this size is highlighted; double-clicking its label restores the larger size's value.
     var ovr = activeBp && l && l.id && mod && mod.key && isOverridden(l.id, mod.key);
@@ -8779,7 +8832,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
           else if (pd.type === 'color') { range = 'colour'; def = pd.def; }
           else if (pd.type === 'bool') { range = 'on / off'; def = pd.def ? 'on' : 'off'; }
           else if (pd.type === 'asset') { range = 'image file'; def = 'none'; }
-          else { range = pd.options.map(function (o) { return o[0]; }).join(' · '); def = (pd.options.filter(function (o) { return o[1] === pd.def; })[0] || [''])[0]; }
+          else { var opts = typeof pd.options === 'function' ? pd.options() : pd.options; range = opts.map(function (o) { return o[0]; }).join(' · '); def = (opts.filter(function (o) { return o[1] === pd.def; })[0] || [''])[0]; }
           return '<tr><td>' + esc(pd.label) + '</td><td class="num">' + esc(range) + '</td><td class="num">' + esc(def) + '</td></tr>';
         }).join('');
         out += '<div class="fx" id="fx-' + k + '"><h4><span class="dot" style="background:' + CAT_COLOR[cat] + '"></span>' + esc(d.name) +
