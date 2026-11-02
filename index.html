@@ -1022,11 +1022,11 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
   <tr><td><b>Body</b></td><td><i>Moves</i> (falls and gets pushed) or <i>Fixed</i> — a static floor, wall, ramp or peg that others collide with but that never moves.</td></tr>
   <tr><td><b>Collision shape</b></td><td><b>Exact outline</b> traces what’s actually drawn — SVG artwork, every letter of a text, the visible part of a transparent image — and splits it into convex pieces, so a ball can rest inside a cup, letters hook into each other and holes in the outline’s edge are respected (holes fully inside a shape are filled). <b>Outline, filled in</b> shrink-wraps it in one convex piece: cheaper, no hollows. <i>Automatic</i>: SVG artwork and stars use the exact outline, round ellipses and 3D models are circles, polygons use their corners, and text, images and videos their bounding box. Or force a <i>Box</i> or <i>Circle</i>.</td></tr>
   <tr><td><b>Bounciness</b>, <b>Friction</b></td><td>How much it rebounds (0–1) and how much it grips instead of sliding.</td></tr>
-  <tr><td><b>Weight</b></td><td>Density: heavier objects push lighter ones out of the way. Mass also grows with size.</td></tr>
+  <tr><td><b>Weight</b></td><td>Density: heavier objects push lighter ones out of the way. Mass also grows with size. Bounciness, Friction and Weight can be animated or mouse-driven too.</td></tr>
   <tr><td><b>Drag &amp; throw</b></td><td>Visitors can pick it up and fling it (on by default). On touch screens the page doesn’t scroll while dragging over the scene.</td></tr>
   <tr><td><b>Don’t rotate</b></td><td>Keeps it upright — handy for text.</td></tr>
 </table>
-<p><b>Physics world</b> (scene settings, shown once a layer is physical): <b>Gravity</b> (0 = weightless), <b>Gravity angle</b> (90° = down), <b>Walls at</b> (the edges of the window or embed — the default, so objects rest on the bottom of what visitors actually see even when “Crop to fill” cuts off part of the frame or “Fit everything” adds space around it — or the frame’s own edges), <b>Walls</b> (floor and sides — the default, so objects placed above the frame drop in — all four edges, floor only, or none), <b>Mouse push</b> (the pointer becomes an invisible ball of that radius that shoves objects aside) and <b>Drop again</b>, which puts everything back where you placed it (so does the restart button).</p>
+<p><b>Physics world</b> (scene settings, shown once a layer is physical): <b>Gravity</b> (0 = weightless), <b>Gravity angle</b> (90° = down), <b>Walls at</b> (the edges of the window or embed — the default, so objects rest on the bottom of what visitors actually see even when “Crop to fill” cuts off part of the frame or “Fit everything” adds space around it — or the frame’s own edges), <b>Walls</b> (floor and sides — the default, so objects placed above the frame drop in — all four edges, floor only, or none), <b>Mouse push</b> (gravity, its angle and mouse push can be animated or driven by the mouse, scroll, sound or code like any other setting — the wave button next to them; spin gravity round with Gravity angle 90 → 450 on a Linear loop, or tie it to Mouse X to tilt the world) (the pointer becomes an invisible ball of that radius that shoves objects aside) and <b>Drop again</b>, which puts everything back where you placed it (so does the restart button).</p>
 <ul>
   <li><b>Following the cursor</b> works with physics: <b>Spring follow</b> pulls the object after the cursor on a physical spring (gravity is held off while it does, and it still collides), <b>Stick to cursor</b> makes it go exactly where the cursor is and shove everything else aside, and a <b>Transform</b> with <b>Follow mouse</b> above it drives it the same way, so it doesn’t fall away from what it’s following.</li>
   <li>Where you place a layer is where it starts. Moving, rotating or resizing it in the editor puts it back there; it then falls again.</li>
@@ -1326,7 +1326,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
   <li><code>fit</code> (scene): <code>cover</code> or <code>contain</code>. <code>breakpoints</code> (scene): <code>[{ "id", "name", "maxWidth", "width", "height", "fit" }]</code>. Per-layer overrides live in <code>bp</code>, keyed by breakpoint id: <code>"bp": { "m1": { "size": 160, "y": 0.4, "p.count": 4096 } }</code>.</li>
   <li>Extrude keys on image/text/shape layers: <code>extrude</code>, <code>depth</code>, <code>bevel</code>, <code>bevelShape</code> (<code>round</code>/<code>chamfer</code>), <code>rotX</code>, <code>rotY</code>, <code>spin</code>, <code>mouseTilt</code>, <code>fov</code>, <code>shading</code>, <code>faceImage</code>, <code>sideMode</code>, <code>sideColor</code>, <code>matColor</code>, plus the lighting keys shared with models.</li>
   <li><code>follow</code>, <code>springStiffness</code> and <code>springDamping</code> are the spring-follow settings.</li>
-  <li>Cursor &amp; physics (content layers; groups take the first three): <code>asCursor</code>, <code>cursorSize</code> (brush expansion), <code>cursorGrow</code> (brush offset, px), <code>cursorPress</code> (<code>""</code>, <code>mouse</code>, <code>always</code>), <code>stick</code>, <code>stickX</code>, <code>stickY</code>, <code>physics</code>, <code>physType</code> (<code>dynamic</code>, <code>static</code>), <code>physShape</code> (<code>auto</code>, <code>outline</code>, <code>hull</code>, <code>box</code>, <code>circle</code>), <code>cursorShape</code> (<code>outline</code>, <code>circle</code>), <code>physBounce</code>, <code>physFriction</code>, <code>physMass</code>, <code>physDrag</code>, <code>physLockRot</code>. Scene: <code>mouseCursor</code> (false = the mouse doesn’t act on effects), <code>hideCursor</code>, <code>physGravity</code>, <code>physGravityDir</code> (degrees), <code>physWalls</code> (<code>sides</code>, <code>box</code>, <code>floor</code>, <code>none</code>), <code>physMouse</code> (px), <code>physBounds</code> (<code>frame</code> = walls at the frame’s own edges; default: the visible edges), <code>physBounds</code> (<code>frame</code> for the frame’s own edges; default the visible edges). Transform: <code>follow</code>, <code>followX</code>, <code>followY</code>.</li>
+  <li>Cursor &amp; physics (content layers; groups take the first three): <code>asCursor</code>, <code>cursorSize</code> (brush expansion), <code>cursorGrow</code> (brush offset, px), <code>cursorPress</code> (<code>""</code>, <code>mouse</code>, <code>always</code>), <code>stick</code>, <code>stickX</code>, <code>stickY</code>, <code>physics</code>, <code>physType</code> (<code>dynamic</code>, <code>static</code>), <code>physShape</code> (<code>auto</code>, <code>outline</code>, <code>hull</code>, <code>box</code>, <code>circle</code>), <code>cursorShape</code> (<code>outline</code>, <code>circle</code>), <code>physBounce</code>, <code>physFriction</code>, <code>physMass</code>, <code>physDrag</code>, <code>physLockRot</code>. Scene: <code>mouseCursor</code> (false = the mouse doesn’t act on effects), <code>hideCursor</code>, <code>physGravity</code>, <code>physGravityDir</code> (degrees), <code>physWalls</code> (<code>sides</code>, <code>box</code>, <code>floor</code>, <code>none</code>), <code>physMouse</code> (px), <code>worldMods</code> (animation bindings for <code>physGravity</code>, <code>physGravityDir</code> and <code>physMouse</code>, same format as layer <code>mods</code>), <code>physBounds</code> (<code>frame</code> = walls at the frame’s own edges; default: the visible edges), <code>physBounds</code> (<code>frame</code> for the frame’s own edges; default the visible edges). Transform: <code>follow</code>, <code>followX</code>, <code>followY</code>.</li>
   <li><code>blend</code> is an index into: Normal, Multiply, Screen, Overlay, Add, Difference, Soft light, Darken, Lighten, Color dodge.</li>
   <li>Effect keys and their <code>params</code> are listed in the <a href="#effects">Effects reference</a>.</li>
 </ul>
@@ -1390,6 +1390,8 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
     '// 1 inside the radius, 0 outside; falloff 0 = hard edge, 1 = soft all the way to the centre.',
     'float falloff(float d, float r, float f){ return 1.0 - smoothstep(r * (1.0 - clamp(f, 0.0, 0.999)), r + 1e-4, d); }',
     'float curR(int i, float r){ return max(r * uCurV[i].z + uCurV[i].w, 0.0); }',
+    '// Velocity of cursor i at a point (UV per 1/60 s): its movement plus its spin (uCur.w, radians, counter-clockwise).',
+    'vec2 curVel(int i, vec2 uv){ vec2 d = (uv - uCur[i].xy) * uFrameRes; return uCurV[i].xy + uCur[i].w * vec2(-d.y, d.x) / uFrameRes; }',
     '// Distance from cursor i (its point, or the edge of its outline — 0 inside) in frame heights.',
     'float curDist(int i, vec2 uv){',
     '  vec2 d = uv - uCur[i].xy;',
@@ -1646,7 +1648,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
         '  float i = max(s.b * p_decay - 0.002, 0.0);',
         '  float r = p_radius * 0.3;',
         '  for (int ci = 0; ci < 4; ci++) { if (ci >= uCurN) break;',
-        '    vec2 mv = uCurV[ci].xy; float sp = length(mv);',
+        '    vec2 mv = curVel(ci, uv); float sp = length(mv);',
         '    float m = falloff(curDist(ci, uv), curR(ci, r * 1.7), p_falloff); m *= m * clamp(sp * 30.0, 0.0, 1.0);',
         '    vec2 dir = sp > 1e-5 ? mv / sp : vec2(0.0);',
         '    v = clamp(v + dir * m * 0.6, -1.0, 1.0);',
@@ -1949,7 +1951,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
         '  float ink = a.w;',
         '  for (int ci = 0; ci < 4; ci++) { if (ci >= uCurN) break;',
         '    float br = falloff(curDist(ci, uv), curR(ci, p_radius), p_falloff);',
-        '    vec2 mv = uCurV[ci].xy; float sp = length(mv) * 60.0;',
+        '    vec2 mv = curVel(ci, uv); float sp = length(mv) * 60.0;',
         '    vel += br * mv * uRes * p_force * 0.35 / uSteps;',
         '    ink += br * (clamp(sp, 0.0, 1.0) * 0.35 * p_force + uCur[ci].z * 0.08) / uSteps; }',
         '  if (p_auto > 0.0) { vec2 q = uv * aspect() * 2.0; vel += p_auto * 0.2 * vec2(snoise(vec3(q, uTime * 0.25)), snoise(vec3(q + 7.3, uTime * 0.25))) / uSteps; ink += p_auto * 0.004 / uSteps; }',
@@ -1989,7 +1991,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
         '  n *= mix(0.95, 0.999, p_persist);',
         '  for (int ci = 0; ci < 4; ci++) { if (ci >= uCurN) break;',
         '    float br = falloff(curDist(ci, uv), curR(ci, p_radius), p_falloff);',
-        '    n += br * (clamp(length(uCurV[ci].xy) * 40.0, 0.0, 1.0) + uCur[ci].z * 0.6) * p_strength * 0.15 / uSteps; }',
+        '    n += br * (clamp(length(curVel(ci, uv)) * 40.0, 0.0, 1.0) + uCur[ci].z * 0.6) * p_strength * 0.15 / uSteps; }',
         '  if (p_rain > 0.0) {',
         '    float rate = 1.0 + p_rain * 12.0, slot = floor(uTime * rate);',
         '    vec2 rp = vec2(hash12(vec2(slot, 1.7)), hash12(vec2(slot, 9.2)));',
@@ -2031,7 +2033,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
         '  float v = min(p_spread * 0.25, 0.45 * px.x / max(dt, 1e-4));',
         '  vec2 acc = -p_stiffness * 40.0 * c.xy + v * v * 4.0 * lap / (px.x * px.x) - c.zw * p_damping;',
         '  for (int ci = 0; ci < 4; ci++) { if (ci >= uCurN) break;',
-        '    vec2 d = (uv - uCur[ci].xy) * aspect(), mv = uCurV[ci].xy; float dist = length(d);',
+        '    vec2 d = (uv - uCur[ci].xy) * aspect(), mv = curVel(ci, uv); float dist = length(d);',
         '    float br = falloff(curDist(ci, uv), curR(ci, p_radius), p_falloff);',
         '    vec2 dir = dist > 1e-5 ? d / dist / aspect() : vec2(0.0);',
         '    float act = clamp(length(mv) * 40.0, 0.0, 1.0) + uCur[ci].z;',
@@ -2108,7 +2110,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
         '      if (length(g) > 1e-4) dir = normalize(g); }',
         '    vec2 m = p_mouseMode < 0.5 ? dir : p_mouseMode < 1.5 ? -dir : p_mouseMode < 2.5 ? vec2(-dir.y, dir.x) : vec2(0.0);',
         '    F += m / asp * br * p_force * 6.0 * (1.0 + uCur[ci].z * 2.0);',
-        '    if (!restore) F += uCurV[ci].xy * 60.0 * br * p_force * 3.0;',
+        '    if (!restore) F += curVel(ci, pos) * 60.0 * br * p_force * 3.0;',
         '    else bh = max(bh, falloff(curDist(ci, home), rr, p_falloff)); }',
         // Restore: the cursor is a brush that pulls particles back to their place in the image (critically damped, no overshoot).
         // With "Stay restored", a particle that has settled at home stays locked there.
@@ -4531,7 +4533,9 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
   /* ---------------- sound input (microphone level, bass, treble) ---------------- */
   function usesSource(scene, names) {
     var hit = false;
-    walk(scene.layers, function (L) { if (L.mods) Object.keys(L.mods).forEach(function (k) { if (L.mods[k] && names.indexOf(L.mods[k].src) >= 0) hit = true; }); });
+    var look = function (mods) { if (mods) Object.keys(mods).forEach(function (k) { if (mods[k] && names.indexOf(mods[k].src) >= 0) hit = true; }); };
+    walk(scene.layers, function (L) { look(L.mods); });
+    look(scene.worldMods);
     return hit;
   }
   Renderer.prototype._startAudio = function () {
@@ -4602,6 +4606,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
 
   Renderer.prototype.step = function (dt) {
     var running = this.playing && !this._reduced;
+    if (running) this._clock = (this._clock || 0) + dt; // advances only with simulation steps (cursor-layer speeds)
     if (running) { this._advancePhases(dt); this.time += dt; }
     this._dt = dt;
     var m = this.mouse, C = this.clocks;
@@ -5085,7 +5090,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
       list = list.concat(cl.slice(Math.max(0, cl.length - (MAX_CURSORS - list.length))));
       var P = new Float32Array(16), V = new Float32Array(16), S = new Float32Array(16), self = this;
       list.forEach(function (c, i) {
-        P[i * 4] = c.m.x; P[i * 4 + 1] = c.m.y; P[i * 4 + 2] = c.m.press || 0;
+        P[i * 4] = c.m.x; P[i * 4 + 1] = c.m.y; P[i * 4 + 2] = c.m.press || 0; P[i * 4 + 3] = c.m.w || 0;
         V[i * 4] = c.m.vx || 0; V[i * 4 + 1] = c.m.vy || 0; V[i * 4 + 2] = c.size; V[i * 4 + 3] = c.grow / H;
         if (c.sdf) { self._curSlot(i, c.sdf); S[i * 4] = c.rot; S[i * 4 + 1] = c.sdf.s; S[i * 4 + 2] = c.sdf.W; S[i * 4 + 3] = c.sdf.H; }
       });
@@ -5719,7 +5724,9 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
       seen[L.id] = 1;
       var shapeKey = [Math.round(bb.w), Math.round(bb.h), L.physShape, L.type, L.shape, L.sides, L.width, L.height, self.assetVersion, e.sig && e.sig.length].join(',');
       var pose = [L.x, L.y, L.rotation || 0].join(','), b = B[L.id], fresh = false;
-      var st = L.physType === 'static', dens = Math.max(0.05, L.physMass == null ? 1 : +L.physMass);
+      // Animated or mouse-driven physics settings (bounce, friction, weight, follow…) apply as they change.
+      var E = self._eff(L);
+      var st = L.physType === 'static', dens = Math.max(0.05, E.physMass == null ? 1 : +E.physMass);
       if (!b || b.pose !== pose) {
         // New, or moved in the editor: start again from the design position.
         var dp = designPose(L, bb, sc0);
@@ -5737,7 +5744,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
           M += pt.area; cx += pt.cen[0] * pt.area; cy += pt.cen[1] * pt.area;
         });
         cx /= M || 1; cy /= M || 1;
-        var I = 0, mass = Math.max(1e-3, M / 10000 * dens);
+        var I = 0, mass = Math.max(1e-3, M / 10000);
         parts.forEach(function (pt) {
           var pm = mass * pt.area / (M || 1);
           if (pt.circle) { pt.c = [pt.c[0] - cx, pt.c[1] - cy]; I += pm * (pt.r * pt.r / 2 + pt.c[0] * pt.c[0] + pt.c[1] * pt.c[1]); }
@@ -5748,12 +5755,13 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
         b.off = [-cx, -cy];
         b.x = ctr.x - (ca * b.off[0] - sa * b.off[1]); b.y = ctr.y - (sa * b.off[0] + ca * b.off[1]);
         b.prox = parts.map(function (pt) { return proxy(b, pt); });
-        b.m = mass; b.I = Math.max(I, 1e-3); b.shapeKey = done ? shapeKey : '';
+        b.m1 = mass; b.I1 = Math.max(I, 1e-3); b.shapeKey = done ? shapeKey : '';
       }
+      b.m = b.m1 * dens; b.I = b.I1 * dens;
       b.im = st ? 0 : 1 / b.m; b.ii = st || L.physLockRot ? 0 : 1 / b.I;
-      b.rest = L.physBounce == null ? 0.3 : +L.physBounce; b.fric = L.physFriction == null ? 0.4 : +L.physFriction;
-      b.drag = L.physDrag !== false && !st; b.stick = !!L.stick && !st; b.L = L;
-      b.follow = st ? 0 : +L.follow || 0;
+      b.rest = E.physBounce == null ? 0.3 : Math.max(0, +E.physBounce); b.fric = E.physFriction == null ? 0.4 : Math.max(0, +E.physFriction);
+      b.drag = L.physDrag !== false && !st; b.stick = !!L.stick && !st; b.L = E;
+      b.follow = st ? 0 : +E.follow || 0;
       b.tf = st ? null : tfs[L.id] || null;
     });
     Object.keys(B).forEach(function (id) { if (!seen[id]) delete B[id]; });
@@ -5766,7 +5774,10 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
     var B = this._syncBodies(), list = Object.keys(B).map(function (k) { return B[k]; });
     if (!list.length) return;
     var sc = this.scene, W = sc.width, H = sc.height, self = this;
-    var g = (sc.physGravity == null ? 1 : +sc.physGravity) * 1800, ga = (sc.physGravityDir == null ? 90 : +sc.physGravityDir) * Math.PI / 180;
+    // Physics world settings can be animated or mouse/scroll-driven like any layer setting (bindings in scene.worldMods).
+    var WP = { physGravity: sc.physGravity == null ? 1 : +sc.physGravity, physGravityDir: sc.physGravityDir == null ? 90 : +sc.physGravityDir, physMouse: +sc.physMouse || 0 };
+    if (sc.worldMods && Object.keys(sc.worldMods).length) WP = this._eff(Object.assign({ id: '__world', type: 'world', mods: sc.worldMods }, WP));
+    var g = (+WP.physGravity || 0) * 1800, ga = (+WP.physGravityDir || 0) * Math.PI / 180;
     var gx = Math.cos(ga) * g, gy = Math.sin(ga) * g;
     // Walls: at the edges of what's visible (the window/embed edges — on a site where "Crop to fill" cuts the frame,
     // the floor is the bottom of the screen area), or at the frame's own edges.
@@ -5784,7 +5795,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
     var p = this._designPoint(), pv = this._pPrev || p, pvx = (p.x - pv.x) / dt, pvy = (p.y - pv.y) / dt, dm = this._designMouse();
     this._pPrev = p;
     var over = this._hover || this.mouse.down;
-    var pushR = +sc.physMouse || 0, pusher = null;
+    var pushR = Math.max(0, +WP.physMouse || 0), pusher = null;
     if (pushR > 0 && over && this.dragBodies !== false) {
       pusher = staticBody(p.x, p.y, [{ circle: true, r: pushR, c: [0, 0] }], 0.4, 0.2);
       pusher.vx = pvx; pusher.vy = pvy;
@@ -6233,24 +6244,43 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
     if (this.scene.mouseCursor === false && add.length) this.mouse = add[0].m;
     try { return this._renderLayers(layers, depth, parentView); } finally { this.mouse = saved; this._curLayers = savedCur; }
   };
+  /**
+   * A cursor layer as a mouse: position, velocity, spin and press, in the same units as the real mouse
+   * (canvas UV, velocity per 1/60 s). A physical object reports its true velocity and spin straight from the
+   * simulation; anything else is measured from how far it moved since the last simulation step (not per drawn
+   * frame, so extra redraws don't read as standing still or as a jump).
+   */
   Renderer.prototype._cursorMouse = function (L) {
     var b = this.layerBox(L); if (!b) return null;
     var CS = this._cursors || (this._cursors = {}), st = CS[L.id], sc = this.scene, k = this.fitK(this.w, this.h);
     var x = ((this.w - sc.width * k) / 2 + b.x * k) / this.w, y = 1 - ((this.h - sc.height * k) / 2 + b.y * k) / this.h;
-    if (!st) st = CS[L.id] = { frame: -1, m: { x: x, y: y, tx: x, ty: y, vx: 0, vy: 0, press: 0, speed: 0 } };
-    if (st.frame !== this._frameNo) { // once per frame, even when a list is rendered twice (masks)
-      var dt = this._dt || 1 / 60, n = 1 / (dt * 60), m = st.m, base = this._realMouse || this.mouse;
-      var vf = 1 - Math.pow(0.75, dt * 60);
-      m.vx += ((x - m.x) * n - m.vx) * vf; m.vy += ((y - m.y) * n - m.vy) * vf;
-      m.x = m.tx = m.ptx = x; m.y = m.ty = m.pty = y;
+    var clock = this._clock || 0;
+    if (!st) st = CS[L.id] = { clock: clock, m: { x: x, y: y, tx: x, ty: y, vx: 0, vy: 0, w: 0, press: 0, speed: 0 } };
+    var m = st.m, dt = clock - st.clock, base = this._realMouse || this.mouse;
+    if (dt > 0) {
+      var body = this._bodies && this._bodies[L.id];
+      if (body && typeof bodyCentre === 'function') {
+        // Velocity of the picture's centre (centre of mass velocity plus spin), design px/s → canvas UV per 1/60 s.
+        var c = bodyCentre(body), rx = c.x - body.x, ry = c.y - body.y;
+        var vx = body.vx - body.w * ry, vy = body.vy + body.w * rx;
+        m.vx = vx * k / this.w / 60; m.vy = -vy * k / this.h / 60;
+        m.w = -body.w / 60; // radians per 1/60 s, counter-clockwise on screen
+      } else {
+        var n = 1 / (dt * 60), vf = 1 - Math.pow(0.6, dt * 60);
+        m.vx += ((x - m.x) * n - m.vx) * vf; m.vy += ((y - m.y) * n - m.vy) * vf;
+        var rot = (b.rot || 0) * Math.PI / 180, dr = st.rot == null ? 0 : rot - st.rot;
+        while (dr > Math.PI) dr -= 2 * Math.PI; while (dr < -Math.PI) dr += 2 * Math.PI;
+        m.w += (-dr * n - m.w) * vf; st.rot = rot;
+      }
       var pr = L.cursorPress === 'always' ? 1 : L.cursorPress === 'mouse' ? (base.press || 0) : 0;
       m.press += (pr - m.press) * (1 - Math.pow(0.82, dt * 60));
       var spd = Math.min(1, Math.hypot(m.vx, m.vy) * 25);
       m.speed += (spd - m.speed) * (1 - Math.pow(spd > m.speed ? 0.6 : 0.93, dt * 60));
-      ['scroll', 'page', 'audio', 'bass', 'treble', 'down'].forEach(function (kk) { m[kk] = base[kk]; });
-      st.frame = this._frameNo;
-    }
-    return st.m;
+      st.clock = clock;
+    } else if (!this.playing) { m.vx = m.vy = m.w = 0; }
+    m.x = m.tx = m.ptx = x; m.y = m.ty = m.pty = y;
+    ['scroll', 'page', 'audio', 'bass', 'treble', 'down'].forEach(function (kk) { m[kk] = base[kk]; });
+    return m;
   };
   Renderer.prototype._renderLayers = function (layers, depth, parentView) {
     var gl = this.gl;
@@ -7155,7 +7185,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
     if (!changes.length) {
       if (moved.length) return 'Move ' + quoted(moved[0]) + ' ' + (fb.m[moved[0].id].parent ? 'into “' + (fb.m[fb.m[moved[0].id].parent].l.name || 'group') + '”' : 'out of its group');
       if (fa.order.join() !== fb.order.join()) return 'Reorder layers';
-      var sk = ['name', 'width', 'height', 'mouseSmoothing', 'fonts', 'fit', 'breakpoints', 'tilt', 'idle', 'idleSpeed', 'tiltRange', 'tiltRecenter', 'tiltInvertX', 'tiltInvertY', 'palette', 'hideCursor', 'mouseCursor', 'physGravity', 'physGravityDir', 'physWalls', 'physMouse', 'physBounds'].filter(function (k) { return JSON.stringify(A[k]) !== JSON.stringify(B[k]); });
+      var sk = ['name', 'width', 'height', 'mouseSmoothing', 'fonts', 'fit', 'breakpoints', 'tilt', 'idle', 'idleSpeed', 'tiltRange', 'tiltRecenter', 'tiltInvertX', 'tiltInvertY', 'palette', 'hideCursor', 'mouseCursor', 'physGravity', 'physGravityDir', 'physWalls', 'physMouse', 'physBounds', 'worldMods'].filter(function (k) { return JSON.stringify(A[k]) !== JSON.stringify(B[k]); });
       if (sk[0] === 'fit') return B.fit === 'contain' ? 'Fit everything' : 'Crop to fill';
       if (sk[0] === 'breakpoints') return 'Edit breakpoint';
       if (sk[0] === 'name') return 'Rename scene';
@@ -7363,7 +7393,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
       bp.width = scene.width; bp.height = scene.height;
       bp.fit = scene.fit || 'cover';
     }
-    ['name', 'mouseSmoothing', 'tilt', 'idle', 'idleSpeed', 'tiltRange', 'tiltRecenter', 'tiltInvertX', 'tiltInvertY', 'hideCursor', 'mouseCursor', 'physGravity', 'physGravityDir', 'physWalls', 'physMouse', 'physBounds'].forEach(function (k) { if (scene[k] === undefined) delete master[k]; else master[k] = scene[k]; });
+    ['name', 'mouseSmoothing', 'tilt', 'idle', 'idleSpeed', 'tiltRange', 'tiltRecenter', 'tiltInvertX', 'tiltInvertY', 'hideCursor', 'mouseCursor', 'physGravity', 'physGravityDir', 'physWalls', 'physMouse', 'physBounds', 'worldMods'].forEach(function (k) { if (scene[k] === undefined) delete master[k]; else master[k] = scene[k]; });
   }
   function overrideOf(id) { var ml = masterById(id); return activeBp && ml && ml.bp && ml.bp[activeBp] || null; }
   function isOverridden(id, key) {
@@ -8037,6 +8067,14 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
   var TEXT_PRESET_NAMES = { rise: 'Rise', fade: 'Fade', pop: 'Pop', blur: 'Blur in', typewriter: 'Typewriter', drop: 'Drop & bounce', spin: 'Spin in', slide: 'Slide in' };
   var WEIGHTS = [100, 200, 300, 400, 500, 600, 700, 800, 900].map(function (w) { return [String(w), w]; });
 
+  /** The physics world's settings, presented like a layer so they can be animated or driven by the mouse/scroll. */
+  function worldLayer() {
+    var w = { id: '__world', type: 'world', name: 'Physics world' };
+    Object.defineProperty(w, 'mods', { enumerable: true, configurable: true,
+      get: function () { return scene.worldMods; },
+      set: function (v) { if (v && Object.keys(v).length) scene.worldMods = v; else delete scene.worldMods; } });
+    return w;
+  }
   function hasPhysics() { var f = false; walk(scene.layers, function (l) { if (l.physics) f = true; }); return f; }
   /** Spring follow: the layer chases the cursor with a physical spring. */
   function springFields(l) {
@@ -8704,14 +8742,14 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
         el('div', { class: 'note', style: 'margin-top:6px', text: 'Scroll over the canvas to preview scroll-driven settings. Settings driven by sound ask for the microphone.' })
       ]),
       hasPhysics() ? section('Physics world', [
-        field({ label: 'Gravity', type: 'range', min: 0, max: 3, step: 0.01, def: 1, title: '1 = like dropping things on a desk. 0 floats (objects drift once thrown).' }, null,
-          function () { return scene.physGravity == null ? 1 : scene.physGravity; }, function (v) { scene.physGravity = v; }),
-        field({ label: 'Gravity angle', type: 'range', min: 0, max: 360, step: 1, def: 90, title: '90 = down, 270 = up, 0 = right.' }, null,
-          function () { return scene.physGravityDir == null ? 90 : scene.physGravityDir; }, function (v) { scene.physGravityDir = v; }),
+        field({ label: 'Gravity', type: 'range', min: 0, max: 3, step: 0.01, def: 1, title: '1 = like dropping things on a desk. 0 floats (objects drift once thrown).' }, worldLayer(),
+          function () { return scene.physGravity == null ? 1 : scene.physGravity; }, function (v) { scene.physGravity = v; }, false, { key: 'physGravity' }),
+        field({ label: 'Gravity angle', type: 'range', min: -360, max: 360, step: 1, def: 90, title: '90 = down, 270 = up, 0 = right. Animate it (e.g. 90 → 450, Loop, Linear) to spin gravity round, or let the mouse tilt it.' }, worldLayer(),
+          function () { return scene.physGravityDir == null ? 90 : scene.physGravityDir; }, function (v) { scene.physGravityDir = v; }, false, { key: 'physGravityDir' }),
         row('Walls', selectCtl([['Floor and sides', 'sides'], ['All four edges', 'box'], ['Floor only', 'floor'], ['None (fall out of frame)', 'none']], scene.physWalls || 'sides', function (v) { scene.physWalls = v; changed(true); }), 'Which frame edges objects collide with. With Floor and sides, objects can start above the frame and drop in.'),
         row('Walls at', selectCtl([['Edges of the window / embed', 'visible'], ['Edges of the frame', 'frame']], scene.physBounds || 'visible', function (v) { scene.physBounds = v === 'visible' ? undefined : v; changed(true); }), 'On a website the frame can be cropped (Crop to fill) or have extra space around it (Fit everything). Window edges: objects rest on the bottom of what visitors actually see. Frame edges: on the frame’s own edges, even where they’re cut off. In the editor both look the same.'),
-                field({ label: 'Mouse push', type: 'range', min: 0, max: 300, step: 1, def: 0, title: 'The pointer becomes an invisible ball of this radius that shoves objects out of its way. 0 = off (objects can still be grabbed).' }, null,
-          function () { return scene.physMouse || 0; }, function (v) { scene.physMouse = v || undefined; }),
+                field({ label: 'Mouse push', type: 'range', min: 0, max: 300, step: 1, def: 0, title: 'The pointer becomes an invisible ball of this radius that shoves objects out of its way. 0 = off (objects can still be grabbed).' }, worldLayer(),
+          function () { return scene.physMouse || 0; }, function (v) { scene.physMouse = v || undefined; }, false, { key: 'physMouse' }),
         el('div', { class: 'btn-row', style: 'margin:4px 0 6px' }, el('button', { class: 'btn small', text: 'Drop again', title: 'Put every object back where you placed it', onclick: function () { R.restart(); } }))
       ]) : '',
       paletteSection(),
