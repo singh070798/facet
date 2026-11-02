@@ -349,6 +349,9 @@ pre.code { grid-column: 1 / -1; margin: 0; font: var(--mono); background: var(--
 /* Phone test: tilt pad */
 .bp-sep { width: 1px; height: 18px; background: var(--line); margin: 0 4px; }
 .bp-tab.phone-test.on { background: #ff9f43; color: #241200; }
+.bp-tab.play-test.on { background: #33d17a; color: #052b14; }
+.frame.play-mode .selbox, .frame.play-mode .guide, .frame.play-mode .snap-line { display: none !important; }
+.frame.play-mode { box-shadow: 0 0 0 2px #33d17a, 0 30px 80px rgba(0,0,0,.55); }
 .tilt-pad { position: absolute; left: 14px; bottom: 40px; width: 200px; padding: 10px; border-radius: 12px; background: rgba(20,20,24,.94); border: 1px solid var(--line); box-shadow: 0 16px 40px rgba(0,0,0,.45); z-index: 7; display: flex; flex-direction: column; gap: 8px; }
 .tp-head { display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
 .tp-area { position: relative; width: 100%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, rgba(255,159,67,.12), rgba(255,255,255,.03) 70%); border: 1px solid var(--line); cursor: grab; touch-action: none; }
@@ -445,6 +448,9 @@ pre.code { grid-column: 1 / -1; margin: 0; font: var(--mono); background: var(--
 .layer .lname > span:first-child, .layer .lname > span:not(.tag):not(.lcost):not(.ovr-dot):not(.clip-mark) { flex: 0 1 auto; min-width: 60px; }
 .layer .lname > .tag, .layer .lname > .lcost, .layer .lname > .ovr-dot { flex: none; }
 
+.proj-link { display: flex; align-items: center; gap: 6px; margin: 10px 14px 0; padding: 4px 8px 4px 4px; border: 0; border-radius: 6px; background: transparent; color: var(--muted); font-size: 12px; cursor: pointer; }
+.proj-link:hover { color: var(--text); background: var(--panel-2); }
+
 </style>
 </head>
 <body>
@@ -460,7 +466,7 @@ pre.code { grid-column: 1 / -1; margin: 0; font: var(--mono); background: var(--
       <button id="tlBtn" class="icon-btn" title="Timeline: every animation at a glance" aria-label="Timeline"></button>
     </div>
     <div class="group">
-      <button id="restartBtn" class="icon-btn" title="Restart animation" aria-label="Restart animation"></button>
+      <button id="restartBtn" class="icon-btn" title="Restart the scene, as if the page had just loaded" aria-label="Restart scene"></button>
       <button id="playBtn" class="icon-btn" aria-label="Play or pause"></button>
       <span id="fps" class="fps"></span>
       <button id="perfBtn" class="perf-btn" title="Performance: how heavy this scene is to render and to download"></button>
@@ -616,11 +622,13 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
   <a href="#interaction">Mouse interaction &amp; motion</a>
   <a class="sub" href="#mouse-control">Animate or mouse-control any setting</a>
   <a class="sub" href="#spring">Spring follow</a>
+  <a class="sub" href="#cursor-layers">Layers as the cursor</a>
   <a class="sub" href="#falloff">Radius &amp; falloff</a>
   <a class="sub" href="#sources">Scroll, tilt, sound &amp; triggers</a>
   <a href="#responsive">Responsive &amp; breakpoints</a>
   <a href="#gravity">Gravity lens</a>
   <a href="#physics">Physics simulations</a>
+  <a class="sub" href="#bodies">Physical objects</a>
   <a href="#transform">Transform</a>
   <a href="#history">Undo &amp; history</a>
   <a href="#saving">Saving, library &amp; versions</a>
@@ -678,11 +686,11 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
 <h2 id="interface">The interface</h2>
 <table>
   <tr><th>Area</th><th>What it does</th></tr>
-  <tr><td><b>Top bar</b></td><td>Project name · Undo / Redo · Restart animation · Play / Pause · frame rate · <b>New</b> (templates) · <b>Open</b> a project file · <b>Save</b> a project file · <b>Export</b> · <b>Help</b> (this document).</td></tr>
+  <tr><td><b>Top bar</b></td><td>Project name · Undo / Redo · Restart (start the scene over, like a reload) · Play / Pause · frame rate · <b>New</b> (templates) · <b>Open</b> a project file · <b>Save</b> a project file · <b>Export</b> · <b>Help</b> (this document).</td></tr>
   <tr><td><b>Add</b> (left, top)</td><td>Buttons to add a Shape, Text, Image, Video, 3D model or Effect. New layers go just above the selected layer — or inside it, if a group is selected.</td></tr>
   <tr><td><b>Layers</b> (left)</td><td>The layer tree. Top of the list draws on top. Eye icon shows/hides, double-click renames, hover for duplicate/delete, drag to reorder or into groups. The small buttons in the header group, mask and ungroup the selection.</td></tr>
   <tr><td><b>Canvas</b> (centre)</td><td>Live preview of the design frame. Click to select, drag to move, use the corner handle to resize. The bottom-left shows the frame size and zoom.</td></tr>
-  <tr><td><b>Inspector</b> (right)</td><td>Settings for the selected layer. With nothing selected it shows scene settings (size, mouse smoothing, fonts) and the shortcut list. <b>Double-click any setting’s label to reset it</b> to its default.</td></tr>
+  <tr><td><b>Inspector</b> (right)</td><td>Settings for the selected layer. With nothing selected it shows the project settings (size, interaction, physics world, palette, fonts) and the shortcut list. To get back to them while a layer is selected, click <b>‹ Project settings</b> at the top of the inspector, press <kbd>Esc</kbd>, or click an empty spot on the canvas. <b>Double-click any setting’s label to reset it</b> to its default.</td></tr>
 </table>
 
 <!-- ============================================================ -->
@@ -907,7 +915,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
   <tr><td>Repeat</td><td><b>Back and forth</b> (ping-pong) · <b>Loop</b> (jumps back to the start; use 0 → 360 for endless rotation) · <b>Play once</b> (intros) · <b>Wiggle</b> (smooth random motion; Duration sets how often it changes direction).</td></tr>
   <tr><td>Easing</td><td>Smooth, Linear, Ease in, Ease out, Sine, Overshoot, Elastic, Bounce, Steps. Overshoot, Elastic and Bounce briefly go past the End value on purpose.</td></tr>
 </table>
-<p>Animations run on the scene clock: the <b>Restart</b> button in the top bar replays them from the start, pause freezes them, and loading a scene or opening an export starts them from zero. Video export records from the start, so intros are captured. Animation and mouse control can be mixed freely — for example tilt animated over time while another setting follows the mouse.</p>
+<p>Animations run on the scene clock: pause freezes them, and loading a scene or opening an export starts them from zero. The <b>Restart</b> button in the top bar starts the whole scene over as if the page had just loaded: animations, text animations and triggers from the beginning, simulations (fluid, water, jelly, particles, trails, motion blur) re-seeded, physical objects back where you placed them, springs and cursor layers at rest, videos from the start. The editor also restarts when you change the frame size or switch breakpoint; the Preview tab has the same <b>Restart</b> button. On a website the scene starts over whenever its size really changes — a resized window, a rotated phone, a new breakpoint — but not when a phone’s address bar slides in and out while scrolling (a small, height-only change). Video export records from the start, so intros are captured. Animation and mouse control can be mixed freely — for example tilt animated over time while another setting follows the mouse.</p>
 <h4>Mouse sources</h4>
 <table>
   <tr><th>Source</th><th>Ends</th><th>Good for</th></tr>
@@ -959,6 +967,20 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
 </ul>
 <p>Spring follow, parallax and float add together, so a layer can bob gently, shift with parallax and spring toward the cursor all at once.</p>
 
+<h3 id="cursor-layers">Layers as the cursor, sticking to it, hiding it</h3>
+<p>Shapes, text, images, videos, 3D models and groups have a <b>Cursor &amp; physics</b> section:</p>
+<ul>
+  <li><b>Is a cursor</b> — the layer becomes an extra cursor: effects react to it exactly as they react to the mouse — particles scatter around it, fluid is stirred by it, ripples, jelly, blur focus, liquid focus and metaballs follow it — <i>and the mouse keeps working too</i>, so there are two (or more) brushes at once. It works like any effect in a group: a cursor layer <i>at the top level</i> acts on the whole scene, one <i>inside a group</i> only acts on that group (nested groups included). Up to four cursors act on an effect at once, the mouse included. Animate the layer (keyframes, float, a Transform) or make it a physical object and it becomes an automatic “ghost hand”.
+    <ul>
+      <li><b>Brush shape</b>: by default the brush is the object’s own <i>outline</i> — a star clears a star-shaped hole, a word pushes particles away letter by letter — turning with the object. Particles are pushed away from the nearest edge. <i>Circle at its centre</i> gives a round brush like the mouse’s.</li>
+      <li>With the outline brush, <b>Brush expand</b> is how far beyond the outline it reaches, as a multiple of each effect’s brush radius (0 = exactly the outline), and <b>Brush offset</b> adds or removes pixels around it. With the circle brush, <b>Brush expand</b> multiplies the brush radius of each effect it acts on (1 = the mouse’s size, 2 = twice as big); <b>Brush offset</b> adds pixels to it (or takes them off) — e.g. half the object’s width so the brush starts at its edge.</li>
+      <li><b>Pressed</b> chooses whether effects that react to holding the button see it as never pressed, always pressed, or pressed while the mouse button is down.</li>
+      <li>Things that follow a single point — Transform “Follow mouse”, Gravity lens, spotlights, mouse-controlled settings, parallax — keep following the mouse. To hand them over to cursor layers, turn off <b>Mouse cursor</b> in the project settings (Interaction): then only cursor layers act as brushes, single-point things follow the nearest cursor layer (or rest in the centre where there is none), and the mouse can still grab physical objects, hover and click.</li>
+    </ul></li>
+  <li><b>Stick to cursor</b> — the layer’s centre sits exactly on the pointer, with no lag (the scene’s mouse smoothing doesn’t apply, so it works as a custom cursor), with an optional <b>Offset</b> in pixels. In the editor, clicks on the canvas pass through a stuck layer — it’s always under the pointer — so select it in the layer list. It always follows the real pointer, also when <b>Mouse cursor</b> is turned off in the project settings (that only stops the mouse acting as a brush). For a bouncy chase use Spring follow; for a physical object, Stick to cursor turns it into a “bat” that knocks other objects around.</li>
+  <li><b>Hide mouse</b> (scene settings, Interaction) — the pointer disappears while it’s over the scene, for custom cursors made from a stuck layer. In the editor it only hides in <b>Play</b> mode, so you can still edit.</li>
+</ul>
+
 <h3 id="falloff">Radius &amp; falloff</h3>
 <p>Every effect setting that has a radius — mouse glow, liquid focus, wavy-line bend, ripple, swirl, lens bulge, mouse trail, bloom, blur and its focus, and all physics brushes — has a matching <b>Falloff</b>. Falloff 0 gives a hard edge; 1 fades smoothly all the way from the centre to the radius.</p>
 
@@ -988,9 +1010,29 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
 </table>
 <ul>
   <li>Everything with a radius has a <b>Falloff</b>; force-type settings work well bound to <b>Mouse speed</b> or <b>Mouse button held</b>.</li>
-  <li>Simulations restart when the scene changes size (for example when an embed is resized or switches breakpoint) and when they’re first shown. They freeze while the scene is paused.</li>
+  <li>Simulations restart with the rest of the scene when it changes size (an embed resized, a phone rotated, a new breakpoint), with the Restart button, and when they’re first shown. They freeze while the scene is paused.</li>
   <li>They need floating-point rendering, which nearly all current devices support. If a device can’t run them, the effect is skipped and the rest of the scene still shows.</li>
   <li>Physics effects are heavier than ordinary effects. Particle counts above 65,536 are best kept for desktop.</li>
+</ul>
+
+<h3 id="bodies">Physical objects</h3>
+<p>Turn on <b>Physical object</b> (Cursor &amp; physics section) for any shape, text, image, video or 3D model and it becomes a rigid body: it falls under gravity, collides with other physical layers and the frame edges, tumbles, stacks, and can be grabbed and thrown with the mouse or a finger.</p>
+<table>
+  <tr><th>Setting</th><th>What it does</th></tr>
+  <tr><td><b>Body</b></td><td><i>Moves</i> (falls and gets pushed) or <i>Fixed</i> — a static floor, wall, ramp or peg that others collide with but that never moves.</td></tr>
+  <tr><td><b>Collision shape</b></td><td><b>Exact outline</b> traces what’s actually drawn — SVG artwork, every letter of a text, the visible part of a transparent image — and splits it into convex pieces, so a ball can rest inside a cup, letters hook into each other and holes in the outline’s edge are respected (holes fully inside a shape are filled). <b>Outline, filled in</b> shrink-wraps it in one convex piece: cheaper, no hollows. <i>Automatic</i>: SVG artwork and stars use the exact outline, round ellipses and 3D models are circles, polygons use their corners, and text, images and videos their bounding box. Or force a <i>Box</i> or <i>Circle</i>.</td></tr>
+  <tr><td><b>Bounciness</b>, <b>Friction</b></td><td>How much it rebounds (0–1) and how much it grips instead of sliding.</td></tr>
+  <tr><td><b>Weight</b></td><td>Density: heavier objects push lighter ones out of the way. Mass also grows with size.</td></tr>
+  <tr><td><b>Drag &amp; throw</b></td><td>Visitors can pick it up and fling it (on by default). On touch screens the page doesn’t scroll while dragging over the scene.</td></tr>
+  <tr><td><b>Don’t rotate</b></td><td>Keeps it upright — handy for text.</td></tr>
+</table>
+<p><b>Physics world</b> (scene settings, shown once a layer is physical): <b>Gravity</b> (0 = weightless), <b>Gravity angle</b> (90° = down), <b>Walls at</b> (the edges of the window or embed — the default, so objects rest on the bottom of what visitors actually see even when “Crop to fill” cuts off part of the frame or “Fit everything” adds space around it — or the frame’s own edges), <b>Walls</b> (floor and sides — the default, so objects placed above the frame drop in — all four edges, floor only, or none), <b>Mouse push</b> (the pointer becomes an invisible ball of that radius that shoves objects aside) and <b>Drop again</b>, which puts everything back where you placed it (so does the restart button).</p>
+<ul>
+  <li><b>Following the cursor</b> works with physics: <b>Spring follow</b> pulls the object after the cursor on a physical spring (gravity is held off while it does, and it still collides), <b>Stick to cursor</b> makes it go exactly where the cursor is and shove everything else aside, and a <b>Transform</b> with <b>Follow mouse</b> above it drives it the same way, so it doesn’t fall away from what it’s following.</li>
+  <li>Where you place a layer is where it starts. Moving, rotating or resizing it in the editor puts it back there; it then falls again.</li>
+  <li>In the editor, clicking selects layers as usual. Press <b>Play</b> (in the bar above the canvas, or <kbd>P</kbd>) to grab and throw objects like a visitor; <kbd>Esc</kbd> leaves Play.</li>
+  <li>Physical objects work with everything else: effects above them distort them, they can be links and hover triggers (the clickable area follows them), and one can be a cursor layer, so a falling ball can stir a fluid.</li>
+  <li>Objects are drawn once and then moved, so they cost almost nothing per frame; the engine itself (about 14 KB, 5 KB gzipped) is only included in exports that use it. Keep it to a few dozen objects.</li>
 </ul>
 
 <!-- ============================================================ -->
@@ -998,7 +1040,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
 <p><b>Transform</b> (in Distort) moves, scales, rotates, skews and tilts in 3D <i>everything below it in its group</i>. Put it at the top of a group to transform just that group — or at the top level to transform the whole scene. Combine it with animation for motion: pop-in intros (Scale 0.4 → 1, Play once, Overshoot), endless spins (Rotation 0 → 360, Loop, Linear), card flips (Tilt Y, Back and forth, Sine) or tilt-with-the-mouse.</p>
 <table>
   <tr><th>Group</th><th>Settings</th></tr>
-  <tr><td>Move</td><td>Move X / Y as a fraction of the frame (positive = right / down).</td></tr>
+  <tr><td>Move</td><td>Move X / Y as a fraction of the frame (positive = right / down). <b>Follow mouse</b> moves the anchor point toward the cursor (1 = right onto it, lower values drift partway), with <b>Follow offset X / Y</b> to keep a distance. With the mouse turned off in the project settings, a cursor layer in the same group takes its place. Extend works out the extra canvas for every place the cursor can go.</td></tr>
   <tr><td>Scale &amp; rotate</td><td>Scale, Scale X / Y (negative flips), Rotation, Skew X / Y.</td></tr>
   <tr><td>3D tilt</td><td>Tilt X (flip up/down), Tilt Y (turn like a door), Perspective, and whether the back side shows when it faces away.</td></tr>
   <tr><td>Anchor &amp; edges</td><td>The point it scales and rotates around, how edges are handled (below), and Keep background still.</td></tr>
@@ -1182,6 +1224,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
 <table class="keys">
   <tr><th>Keys</th><th>Action</th></tr>
   <tr><td><kbd>Space</kbd></td><td>Play / pause</td></tr>
+  <tr><td><kbd>P</kbd> · <kbd>Esc</kbd></td><td>Play mode on (grab physical objects, try links and hover triggers) · off</td></tr>
   <tr><td><kbd>Ctrl Z</kbd> · <kbd>Ctrl Shift Z</kbd> or <kbd>Ctrl Y</kbd></td><td>Undo · Redo (the clock button shows the full history)</td></tr>
   <tr><td><kbd>Ctrl D</kbd></td><td>Duplicate the selected layer</td></tr>
   <tr><td><kbd>Ctrl C</kbd> · <kbd>Ctrl X</kbd> · <kbd>Ctrl V</kbd></td><td>Copy · cut · paste layers (also between projects and tabs; pasting an image adds it)</td></tr>
@@ -1283,6 +1326,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
   <li><code>fit</code> (scene): <code>cover</code> or <code>contain</code>. <code>breakpoints</code> (scene): <code>[{ "id", "name", "maxWidth", "width", "height", "fit" }]</code>. Per-layer overrides live in <code>bp</code>, keyed by breakpoint id: <code>"bp": { "m1": { "size": 160, "y": 0.4, "p.count": 4096 } }</code>.</li>
   <li>Extrude keys on image/text/shape layers: <code>extrude</code>, <code>depth</code>, <code>bevel</code>, <code>bevelShape</code> (<code>round</code>/<code>chamfer</code>), <code>rotX</code>, <code>rotY</code>, <code>spin</code>, <code>mouseTilt</code>, <code>fov</code>, <code>shading</code>, <code>faceImage</code>, <code>sideMode</code>, <code>sideColor</code>, <code>matColor</code>, plus the lighting keys shared with models.</li>
   <li><code>follow</code>, <code>springStiffness</code> and <code>springDamping</code> are the spring-follow settings.</li>
+  <li>Cursor &amp; physics (content layers; groups take the first three): <code>asCursor</code>, <code>cursorSize</code> (brush expansion), <code>cursorGrow</code> (brush offset, px), <code>cursorPress</code> (<code>""</code>, <code>mouse</code>, <code>always</code>), <code>stick</code>, <code>stickX</code>, <code>stickY</code>, <code>physics</code>, <code>physType</code> (<code>dynamic</code>, <code>static</code>), <code>physShape</code> (<code>auto</code>, <code>outline</code>, <code>hull</code>, <code>box</code>, <code>circle</code>), <code>cursorShape</code> (<code>outline</code>, <code>circle</code>), <code>physBounce</code>, <code>physFriction</code>, <code>physMass</code>, <code>physDrag</code>, <code>physLockRot</code>. Scene: <code>mouseCursor</code> (false = the mouse doesn’t act on effects), <code>hideCursor</code>, <code>physGravity</code>, <code>physGravityDir</code> (degrees), <code>physWalls</code> (<code>sides</code>, <code>box</code>, <code>floor</code>, <code>none</code>), <code>physMouse</code> (px), <code>physBounds</code> (<code>frame</code> = walls at the frame’s own edges; default: the visible edges), <code>physBounds</code> (<code>frame</code> for the frame’s own edges; default the visible edges). Transform: <code>follow</code>, <code>followX</code>, <code>followY</code>.</li>
   <li><code>blend</code> is an index into: Normal, Multiply, Screen, Overlay, Add, Difference, Soft light, Darken, Lighten, Color dodge.</li>
   <li>Effect keys and their <code>params</code> are listed in the <a href="#effects">Effects reference</a>.</li>
 </ul>
@@ -1332,6 +1376,11 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
     'uniform float uPress;',
     'uniform float uDt;',
     'uniform vec2 uFrameRes;',
+    // Every cursor that acts as a brush here: the mouse (unless turned off) and cursor layers.
+    // uCur: position xy, press z. uCurV: velocity xy, brush expansion z, brush offset w (frame heights).
+    'uniform int uCurN; uniform vec4 uCur[4]; uniform vec4 uCurV[4];',
+    // uCurS: cursor outline (rotation, cells per design px, mask width, height in cells; width 0 = a point).
+    'uniform vec4 uCurS[4]; uniform sampler2D uCurTex;',
     '#define PI 3.14159265359',
     'uniform vec4 uSrcView;',
     'vec4 T(vec2 uv){ return texture(uTex, (uv - uSrcView.xy) / uSrcView.zw); }',
@@ -1340,6 +1389,20 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
     'float luma(vec3 c){ return dot(c, vec3(0.299, 0.587, 0.114)); }',
     '// 1 inside the radius, 0 outside; falloff 0 = hard edge, 1 = soft all the way to the centre.',
     'float falloff(float d, float r, float f){ return 1.0 - smoothstep(r * (1.0 - clamp(f, 0.0, 0.999)), r + 1e-4, d); }',
+    'float curR(int i, float r){ return max(r * uCurV[i].z + uCurV[i].w, 0.0); }',
+    '// Distance from cursor i (its point, or the edge of its outline — 0 inside) in frame heights.',
+    'float curDist(int i, vec2 uv){',
+    '  vec2 d = uv - uCur[i].xy;',
+    '  if (uCurS[i].z < 0.5) return length(d * vec2(uFrameRes.x / uFrameRes.y, 1.0));',
+    '  vec2 px = d * uFrameRes / max(uScale, 1e-4); px.y = -px.y;',
+    '  float c = cos(uCurS[i].x), s = sin(uCurS[i].x);',
+    '  vec2 q = vec2(c * px.x + s * px.y, -s * px.x + c * px.y) * uCurS[i].y + uCurS[i].zw * 0.5;',
+    '  vec2 qc = clamp(q, vec2(0.5), uCurS[i].zw - 0.5);',
+    '  float dc = texture(uCurTex, vec2((float(i) * 64.0 + qc.x) / 256.0, qc.y / 64.0)).r * 64.0 + length(q - qc);',
+    '  return dc / uCurS[i].y * uScale / uFrameRes.y;',
+    '}',
+    '// Strongest brush over all cursors (each with its own size).',
+    'float brush(vec2 uv, float r, float f){ float k = 0.0; for (int i = 0; i < 4; i++){ if (i >= uCurN) break; k = max(k, falloff(curDist(i, uv), curR(i, r), f)); } return k; }',
     'mat2 rot(float a){ float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }',
     'float hash12(vec2 p){ vec3 p3 = fract(vec3(p.xyx) * 0.1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }',
     'vec3 mod289(vec3 x){ return x - floor(x * (1.0 / 289.0)) * 289.0; }',
@@ -1508,7 +1571,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
         '  vec2 q = vec2(fbm(vec3(p, t)), fbm(vec3(p + 5.2, t)));',
         '  vec2 r = vec2(fbm(vec3(p + 3.0 * q + 1.7, t)), fbm(vec3(p + 3.0 * q + 9.2, t)));',
         '  float m = 1.0;',
-        '  if (p_mouse > 0.0){ float d = length((uv - uMouse) * aspect()); m = mix(1.0, falloff(d, p_radius, p_falloff) * 1.6, p_mouse); }',
+        '  if (p_mouse > 0.0){ m = mix(1.0, brush(uv, p_radius, p_falloff) * 1.6, p_mouse); }',
         '  return T(uv + r * p_strength * 0.1 * m);',
         '}'].join('\n')
     },
@@ -1581,13 +1644,13 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
         '  vec4 s = texture(uPrev, uv);',
         '  vec2 v = (s.rg * 2.0 - 1.0) * p_decay;',
         '  float i = max(s.b * p_decay - 0.002, 0.0);',
-        '  vec2 d = (uv - uMouse) * aspect();',
         '  float r = p_radius * 0.3;',
-        '  float sp = length(uMouseVel);',
-        '  float m = falloff(length(d), r * 1.7, p_falloff); m *= m * clamp(sp * 30.0, 0.0, 1.0);',
-        '  vec2 dir = sp > 1e-5 ? uMouseVel / sp : vec2(0.0);',
-        '  v = clamp(v + dir * m * 0.6, -1.0, 1.0);',
-        '  i = clamp(i + m * 0.6, 0.0, 1.0);',
+        '  for (int ci = 0; ci < 4; ci++) { if (ci >= uCurN) break;',
+        '    vec2 mv = uCurV[ci].xy; float sp = length(mv);',
+        '    float m = falloff(curDist(ci, uv), curR(ci, r * 1.7), p_falloff); m *= m * clamp(sp * 30.0, 0.0, 1.0);',
+        '    vec2 dir = sp > 1e-5 ? mv / sp : vec2(0.0);',
+        '    v = clamp(v + dir * m * 0.6, -1.0, 1.0);',
+        '    i = clamp(i + m * 0.6, 0.0, 1.0); }',
         '  return vec4(v * 0.5 + 0.5, i, 1.0);',
         '}'].join('\n'),
       glsl: [
@@ -1797,7 +1860,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
       glsl: [
         'vec4 effect(vec2 uv){',
         '  float k = 1.0;',
-        '  if (p_focus > 0.5){ vec2 c = p_focus > 1.5 ? vec2(0.5) : uMouse; k = 1.0 - falloff(length((uv - c) * aspect()), p_focusSize, p_focusFalloff); }',
+        '  if (p_focus > 0.5){ k = 1.0 - (p_focus > 1.5 ? falloff(length((uv - 0.5) * aspect()), p_focusSize, p_focusFalloff) : brush(uv, p_focusSize, p_focusFalloff)); }',
         '  float Rr = p_radius * uScale * k;',
         '  if (Rr < 0.5) return T(uv);',
         '  vec4 sum = vec4(0.0); float tw = 0.0; float j = hash12(gl_FragCoord.xy) * 6.2831;',
@@ -1883,10 +1946,12 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
         '  float cB = (rb.y - lb.y) - (c.x - bb.x), cT = (rt.y - lt.y) - (tt.x - c.x);',
         '  vec2 gN = vec2(abs(cR) - abs(cL), abs(cT) - abs(cB)); gN /= length(gN) + 1e-5;',
         '  vel += p_swirl * 0.25 * cC * vec2(gN.y, -gN.x);',
-        '  float br = falloff(length((uv - uMouse) * aspect()), p_radius, p_falloff);',
-        '  float sp = length(uMouseVel) * 60.0;',
-        '  vel += br * uMouseVel * uRes * p_force * 0.35 / uSteps;',
-        '  float ink = a.w + br * (clamp(sp, 0.0, 1.0) * 0.35 * p_force + uPress * 0.08) / uSteps;',
+        '  float ink = a.w;',
+        '  for (int ci = 0; ci < 4; ci++) { if (ci >= uCurN) break;',
+        '    float br = falloff(curDist(ci, uv), curR(ci, p_radius), p_falloff);',
+        '    vec2 mv = uCurV[ci].xy; float sp = length(mv) * 60.0;',
+        '    vel += br * mv * uRes * p_force * 0.35 / uSteps;',
+        '    ink += br * (clamp(sp, 0.0, 1.0) * 0.35 * p_force + uCur[ci].z * 0.08) / uSteps; }',
         '  if (p_auto > 0.0) { vec2 q = uv * aspect() * 2.0; vel += p_auto * 0.2 * vec2(snoise(vec3(q, uTime * 0.25)), snoise(vec3(q + 7.3, uTime * 0.25))) / uSteps; ink += p_auto * 0.004 / uSteps; }',
         '  vel *= 1.0 - p_damping * 0.04 / uSteps;',
         '  ink *= 1.0 - p_inkFade * 0.03 / uSteps;',
@@ -1922,8 +1987,9 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
         '  vec4 c = texture(uPrev, uv);',
         '  float n = (texture(uPrev, uv - vec2(px.x, 0.0)).r + texture(uPrev, uv + vec2(px.x, 0.0)).r + texture(uPrev, uv - vec2(0.0, px.y)).r + texture(uPrev, uv + vec2(0.0, px.y)).r) * 0.5 - c.g;',
         '  n *= mix(0.95, 0.999, p_persist);',
-        '  float br = falloff(length((uv - uMouse) * aspect()), p_radius, p_falloff);',
-        '  n += br * (clamp(length(uMouseVel) * 40.0, 0.0, 1.0) + uPress * 0.6) * p_strength * 0.15 / uSteps;',
+        '  for (int ci = 0; ci < 4; ci++) { if (ci >= uCurN) break;',
+        '    float br = falloff(curDist(ci, uv), curR(ci, p_radius), p_falloff);',
+        '    n += br * (clamp(length(uCurV[ci].xy) * 40.0, 0.0, 1.0) + uCur[ci].z * 0.6) * p_strength * 0.15 / uSteps; }',
         '  if (p_rain > 0.0) {',
         '    float rate = 1.0 + p_rain * 12.0, slot = floor(uTime * rate);',
         '    vec2 rp = vec2(hash12(vec2(slot, 1.7)), hash12(vec2(slot, 9.2)));',
@@ -1964,12 +2030,13 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
         '  float dt = min(uDt, 1.0 / 30.0) / uSteps;',
         '  float v = min(p_spread * 0.25, 0.45 * px.x / max(dt, 1e-4));',
         '  vec2 acc = -p_stiffness * 40.0 * c.xy + v * v * 4.0 * lap / (px.x * px.x) - c.zw * p_damping;',
-        '  vec2 d = (uv - uMouse) * aspect(); float dist = length(d);',
-        '  float br = falloff(dist, p_radius, p_falloff);',
-        '  vec2 dir = dist > 1e-5 ? d / dist / aspect() : vec2(0.0);',
-        '  float act = clamp(length(uMouseVel) * 40.0, 0.0, 1.0) + uPress;',
-        '  if (p_mode < 0.5) acc += br * uMouseVel * 60.0 * p_strength * 10.0;',
-        '  else acc += br * dir * (p_mode < 1.5 ? 1.0 : -1.0) * p_strength * 5.0 * act;',
+        '  for (int ci = 0; ci < 4; ci++) { if (ci >= uCurN) break;',
+        '    vec2 d = (uv - uCur[ci].xy) * aspect(), mv = uCurV[ci].xy; float dist = length(d);',
+        '    float br = falloff(curDist(ci, uv), curR(ci, p_radius), p_falloff);',
+        '    vec2 dir = dist > 1e-5 ? d / dist / aspect() : vec2(0.0);',
+        '    float act = clamp(length(mv) * 40.0, 0.0, 1.0) + uCur[ci].z;',
+        '    if (p_mode < 0.5) acc += br * mv * 60.0 * p_strength * 10.0;',
+        '    else acc += br * dir * (p_mode < 1.5 ? 1.0 : -1.0) * p_strength * 5.0 * act; }',
         '  vec2 vel = c.zw + acc * dt;',
         '  vec2 disp = clamp(c.xy + vel * dt, -0.35, 0.35);',
         '  return vec4(disp, vel);',
@@ -2029,18 +2096,24 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
         '  bool keep = p_mode > 0.5 && p_mode < 1.5 && p_after > 0.5 && p_mouseMode < 2.5;',
         '  vec2 base = pos, off = vel;',
         '  if (keep) pos = base + off;',
-        '  vec2 d = (pos - uMouse) * asp; float dist = length(d);',
-        '  float br = falloff(dist, p_radius, p_falloff);',
-        '  vec2 dir = dist > 1e-5 ? d / dist : vec2(0.0);',
         '  bool restore = p_mouseMode > 2.5;',
-        '  vec2 m = p_mouseMode < 0.5 ? dir : p_mouseMode < 1.5 ? -dir : p_mouseMode < 2.5 ? vec2(-dir.y, dir.x) : vec2(0.0);',
-        '  vec2 F = m / asp * br * p_force * 6.0 * (1.0 + uPress * 2.0);',
-        '  if (!restore) F += uMouseVel * 60.0 * br * p_force * 3.0;',
+        '  vec2 F = vec2(0.0); float bh = 0.0;',
+        '  for (int ci = 0; ci < 4; ci++) { if (ci >= uCurN) break;',
+        '    vec2 d = (pos - uCur[ci].xy) * asp; float dist = curDist(ci, pos), rr = curR(ci, p_radius);',
+        '    float br = falloff(dist, rr, p_falloff);',
+        '    vec2 dir = length(d) > 1e-5 ? normalize(d) : vec2(0.0);',
+        // Outline brushes push away from the nearest edge (the distance gradient), not from the centre.
+        '    if (uCurS[ci].z > 0.5 && br > 0.0) { vec2 ex = vec2(2.0 / uFrameRes.x, 0.0), ey = vec2(0.0, 2.0 / uFrameRes.y);',
+        '      vec2 g = vec2(curDist(ci, pos + ex) - curDist(ci, pos - ex), curDist(ci, pos + ey) - curDist(ci, pos - ey)) / vec2(ex.x, ey.y) / asp;',
+        '      if (length(g) > 1e-4) dir = normalize(g); }',
+        '    vec2 m = p_mouseMode < 0.5 ? dir : p_mouseMode < 1.5 ? -dir : p_mouseMode < 2.5 ? vec2(-dir.y, dir.x) : vec2(0.0);',
+        '    F += m / asp * br * p_force * 6.0 * (1.0 + uCur[ci].z * 2.0);',
+        '    if (!restore) F += uCurV[ci].xy * 60.0 * br * p_force * 3.0;',
+        '    else bh = max(bh, falloff(curDist(ci, home), rr, p_falloff)); }',
         // Restore: the cursor is a brush that pulls particles back to their place in the image (critically damped, no overshoot).
         // With "Stay restored", a particle that has settled at home stays locked there.
         // The brush acts on particles whose *home* is under the cursor, so they fly in from wherever they are and the
         // picture reappears exactly where you brush.
-        '  float bh = restore ? falloff(length((home - uMouse) * asp), p_radius, p_falloff) : 0.0;',
         '  if (restore) {',
         // Locked: snapped exactly onto home (only the snap below produces an exact match with zero speed).
         '    if (p_stay > 0.5 && pos == home && vel == vec2(0.0)) return vec4(home, 0.0, 0.0);',
@@ -2165,7 +2238,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
         'vec4 effect(vec2 uv){',
         '  float k = 1.0;',
         '  if (p_mode > 0.5 && p_mode < 1.5){ vec2 q = rot(p_angle * PI / 180.0) * ((uv - vec2(0.5, 1.0 - p_focus)) * aspect()); k = smoothstep(p_band * 0.5, p_band * 0.5 + p_soft, abs(q.y)); }',
-        '  else if (p_mode > 1.5){ k = smoothstep(p_band * 0.5, p_band * 0.5 + p_soft, length((uv - uMouse) * aspect())); }',
+        '  else if (p_mode > 1.5){ for (int ci = 0; ci < 4; ci++) { if (ci >= uCurN) break; float b = curR(ci, p_band * 0.5); k = min(k, smoothstep(b, b + p_soft, curDist(ci, uv))); } }',
         '  float Rr = p_radius * uScale * k;',
         '  if (Rr < 0.5) return T(uv);',
         '  vec4 sum = vec4(0.0); float tw = 0.0; float j = hash12(gl_FragCoord.xy) * 6.2831;',
@@ -2289,7 +2362,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
         '    float r = p_size * (0.65 + 0.7 * hash12(vec2(fi, 3.1)));',
         '    f += pow(r * r / (dot(p - c, p - c) + 1e-5), pw * 0.5);',
         '  }',
-        '  if (p_mouse > 0.0){ vec2 mm = (uMouse - 0.5) * asp; float r = p_size * p_mouse; f += pow(r * r / (dot(p - mm, p - mm) + 1e-5), pw * 0.5); }',
+        '  if (p_mouse > 0.0){ for (int ci = 0; ci < 4; ci++) { if (ci >= uCurN) break; vec2 mm = (uCur[ci].xy - 0.5) * asp; float r = curR(ci, p_size * p_mouse); f += pow(r * r / (dot(p - mm, p - mm) + 1e-5), pw * 0.5); } }',
         '  float e = fwidth(f) + p_soft * 0.5;',
         '  float a = smoothstep(1.0 - e, 1.0 + e, f);',
         '  vec3 col = mix(p_c1, p_c2, clamp(uv.y * 0.8 + 0.1 + 0.15 * sin(uv.x * 3.0 + t), 0.0, 1.0));',
@@ -2604,6 +2677,9 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
     params: [
       GP('Move', R('moveX', 'Move X', -1, 1, 0), null, false, 'Fraction of the frame width; positive moves right.'),
       GP('Move', R('moveY', 'Move Y', -1, 1, 0), null, false, 'Fraction of the frame height; positive moves down.'),
+      GP('Move', R('follow', 'Follow mouse', 0, 1, 0), null, true, 'Moves the anchor point toward the cursor: 1 puts it right on the cursor, 0.2 drifts a little after it. A cursor layer in the same group counts as the mouse.'),
+      GP('Move', R('followX', 'Follow offset X', -1, 1, 0), function (p) { return +p.follow > 0; }, false, 'Keeps this far from the cursor, as a fraction of the frame width.'),
+      GP('Move', R('followY', 'Follow offset Y', -1, 1, 0), function (p) { return +p.follow > 0; }, false, 'Fraction of the frame height; positive is below the cursor.'),
       GP('Scale & rotate', R('scale', 'Scale', 0, 5, 1)),
       GP('Scale & rotate', R('scaleX', 'Scale X', -3, 3, 1), null, false, 'Negative values flip horizontally.'),
       GP('Scale & rotate', R('scaleY', 'Scale Y', -3, 3, 1), null, false, 'Negative values flip vertically.'),
@@ -2816,8 +2892,10 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
     __layer: {
       params: [],
       glsl: [
-        'uniform sampler2D uLayer; uniform vec2 uOffset; uniform float uPremul; uniform vec4 uLayerView;',
-        'vec4 effect(vec2 uv){ vec4 c = viewTex(uLayer, uLayerView, uv - uOffset);',
+        'uniform sampler2D uLayer; uniform vec2 uOffset; uniform float uPremul; uniform vec4 uLayerView; uniform vec3 uSpin;',
+        'vec4 effect(vec2 uv){ vec2 s = uv - uOffset;',
+        '  if (uSpin.z != 0.0) { vec2 A = aspect(), d = (s - uSpin.xy) * A; float cs = cos(uSpin.z), sn = sin(uSpin.z); s = uSpin.xy + vec2(d.x * cs - d.y * sn, d.x * sn + d.y * cs) / A; }',
+        '  vec4 c = viewTex(uLayer, uLayerView, s);',
         '  if (uPremul > 0.5 && c.a > 0.0) c.rgb /= c.a; return c; }'
       ].join('\n')
     },
@@ -2891,6 +2969,8 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
   function fontStack(name) { return FONT_STACKS[name] || ('"' + String(name).replace(/"/g, '') + '", system-ui, sans-serif'); }
 
   var CONTENT_TYPES = { shape: 1, text: 1, image: 1, video: 1, model: 1 };
+  /** A layer the physics simulation moves (needs the physics part of the player). */
+  function isBody(L) { return !!(L && L.physics && CONTENT_TYPES[L.type] && L.visible !== false && !L.mask && typeof designPose === 'function'); }
   var MASK_MODES = ['alpha', 'luminance', 'inverted', 'inverted-luminance'];
 
   /* ---------------- assets: embedded, linked, or responsive ----------------
@@ -3818,6 +3898,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
     scene = this.scene = applyPalette(resolveScene(scene, this.bp));
     this._wantAudio = !this.mouseSource && !this.opts.size && usesSource(scene, ['audio', 'bass', 'treble']);
     this._interactive = interactiveTargets(scene);
+    this._pointerStyle();
     if (this._wantAudio === false && this._audio) { /* keep running until destroy; cheap */ }
     var ids = {};
     walk(scene.layers, function (l) { ids[l.id] = 1; });
@@ -4012,6 +4093,9 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
   //@end
   /** The texture for a content layer: flat, extruded or 3D model. */
   Renderer.prototype._layerTex = function (L, view) {
+    // Physical objects are drawn once at the frame centre, unrotated; the simulation moves and turns that picture.
+    // (So they never get cut off at the frame edge they started beyond, and a moving body never re-rasterizes.)
+    if (isBody(L)) L = Object.assign({}, L, { x: 0.5, y: 0.5, rotation: 0 });
     if (L.type === 'model') return this._modelTex(L, view);
     if (L.extrude && EXTRUDE_RASTER_KEYS[L.type]) return this._extrudeTex(L, view);
     return this._contentTex(L, view);
@@ -4071,12 +4155,22 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
     else if (!shouldPlay && !v.paused) v.pause();
   };
   /** Jump the animation (and every video) back to the start. */
+  /**
+   * Start the scene over, as if the page had just loaded: animations and triggers from the beginning, simulations
+   * (fluid, particles, water, jelly, trails, motion blur) re-seeded, physical objects back where they were placed,
+   * springs and cursor layers at rest, videos from the start.
+   */
   Renderer.prototype.restart = function () {
     this.time = 0;
     this.phases = {};
     this.clocks = { view: this._inView ? 0 : -1, hover: 0, click: -1, manual: -1 };
     this.lclocks = {};
+    this._bodies = null; this._grab = null; this._grabTried = false; this._pPrev = null;
+    this.springs = {}; this._cursors = {};
+    var m = this.mouse; if (m) { m.vx = m.vy = 0; m.speed = 0; m.press = 0; }
     var self = this;
+    Object.keys(this.states || {}).forEach(function (id) { self._freeState(self.states[id]); });
+    this.states = {};
     Object.keys(this.videos).forEach(function (id) { try { self.videos[id].el.currentTime = 0; } catch (e) { /* ignore */ } });
   };
   /** Pause this renderer's videos at the same positions as another renderer's (used for still exports). */
@@ -4518,6 +4612,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
       this._hoverLayers = this.mouseSource._hoverLayers; if (this.mouseSource.lclocks) this.lclocks = this.mouseSource.lclocks;
       this._clockStep(dt, running, true);
       this._springs(dt);
+      this._bodies = this.mouseSource._bodies;
       return;
     }
     this._readInputs(dt);
@@ -4538,6 +4633,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
     var spd = Math.min(1, Math.hypot(m.vx, m.vy) * 25);
     m.speed = (m.speed || 0) + (spd - (m.speed || 0)) * (dt > 0 ? 1 - Math.pow(spd > (m.speed || 0) ? 0.6 : 0.93, dt * 60) : 0);
     this._springs(dt);
+    if (running && this._physStep) this._physStep(dt);
   };
 
   /** Trigger clocks: seconds since the scene came into view / was clicked / was triggered from code; hover runs forward while hovered and back when not. */
@@ -4583,7 +4679,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
     }
     var b = this.bbox(L.id); if (!b) return null;
     var o = this.offset(L);
-    return { x: b.x + o[0] * sw, y: b.y - o[1] * sh, w: b.w, h: b.h, rot: b.rot || 0 };
+    return { x: b.x + o[0] * sw, y: b.y - o[1] * sh, w: b.w, h: b.h, rot: (b.rot || 0) + this.extraRot(L) };
   };
   /**
    * Links: real <a> elements laid over linked layers, so they're clickable, keyboard-focusable,
@@ -4604,6 +4700,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
         a = pool[L.id] = document.createElement('a');
         a.style.cssText = 'position:absolute;left:0;top:0;display:block;z-index:2;cursor:pointer;background:transparent;transform-origin:50% 50%;-webkit-tap-highlight-color:transparent;';
         a.className = 'facet-link';
+        if (sc.hideCursor && !self.showCursor) a.style.cursor = 'none';
         host.appendChild(a);
       }
       var url = String(L.link.url);
@@ -4663,6 +4760,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
       var mode = sc.idle || 'touch', coarse = this.simPhone || (global.matchMedia ? global.matchMedia('(hover: none)').matches : false);
       var want = mode === 'always' ? idle > 2500 : mode === 'touch' ? coarse && idle > 2500 : false;
       if (this.opts.interactive === false && !this.mouseSource) want = false;
+      if (m.down) want = false; // someone is pressing (or dragging an object): never take the pointer away
       this._ghostMix = Math.min(1, Math.max(0, this._ghostMix + (want ? dt / 1.2 : -dt * 4)));
       if (this._ghostMix > 0) {
         var g = this._ghostT += dt * (sc.idleSpeed == null ? 1 : +sc.idleSpeed);
@@ -4782,9 +4880,10 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
    */
   Renderer.prototype._eff = function (L) {
     var mods = L.mods, ov = this.overrides[L.id];
-    if (!mods && !ov) return L;
+    var fol = L.type === 'effect' && L.effect === 'transform' && L.params && +L.params.follow > 0;
+    if (!mods && !ov && !fol) return L;
     var keys = mods ? Object.keys(mods) : [];
-    if (!keys.length && !ov) return L;
+    if (!keys.length && !ov && !fol) return L;
     var E = Object.assign({}, L);
     if (L.params) E.params = Object.assign({}, L.params);
     for (var i = 0; i < keys.length; i++) {
@@ -4801,6 +4900,13 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
     }
     // Values set from the page's own code (renderer.set) win over everything.
     if (ov) Object.keys(ov).forEach(function (k) { if (k.slice(0, 2) === 'p.') { if (E.params) E.params[k.slice(2)] = ov[k]; } else E[k] = ov[k]; });
+    // Transform "Follow mouse": the anchor chases the cursor (or this group's cursor layer).
+    if (fol) {
+      var P = E.params, f = +P.follow, m = this.mouse;
+      var ax = P.anchorX == null ? 0.5 : +P.anchorX, ay = P.anchorY == null ? 0.5 : +P.anchorY;
+      P.moveX = (+P.moveX || 0) + (m.x - ax) * f + (+P.followX || 0);
+      P.moveY = (+P.moveY || 0) + ((1 - m.y) - ay) * f + (+P.followY || 0);
+    }
     return E;
   };
 
@@ -4843,11 +4949,13 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
     if (!this.scene || !dt) return;
     var steps = Math.max(1, Math.ceil(dt / (1 / 120))), h = dt / steps;
     walk(this.scene.layers, function (L) {
-      var f = +L.follow || 0;
+      var f = isBody(L) ? 0 : +L.follow || 0; // physical objects spring after the cursor inside the simulation
       if (!f) { if (sp[L.id]) delete sp[L.id]; return; }
       var s = sp[L.id] || (sp[L.id] = { x: 0, y: 0, vx: 0, vy: 0 });
       var lx = L.type === 'group' || L.x == null ? 0.5 : L.x, ly = L.type === 'group' || L.y == null ? 0.5 : 1 - L.y;
-      var tx = (m.x - lx) * f, ty = (m.y - ly) * f;
+      // The cursor in frame fractions (it's measured across the canvas, which may crop or extend the frame).
+      var fc = self._f2c(), mx = 0.5 + (m.x - 0.5) / fc[0], my = 0.5 + (m.y - 0.5) / fc[1];
+      var tx = (mx - lx) * f, ty = (my - ly) * f;
       var k = L.springStiffness == null ? 120 : +L.springStiffness, c = L.springDamping == null ? 12 : +L.springDamping;
       for (var i = 0; i < steps; i++) {
         s.vx += (k * (tx - s.x) - c * s.vx) * h; s.vy += (k * (ty - s.y) - c * s.vy) * h;
@@ -4868,6 +4976,12 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
     }
     w = Math.max(1, Math.min(w, 8192)); h = Math.max(1, Math.min(h, 8192));
     if (w === this.w && h === this.h) return;
+    // A real size change (window resized, phone rotated, other layout) starts the scene over like a reload — except a
+    // small height-only change, which is a phone's address bar sliding in and out while the page scrolls.
+    var cw = this.canvas.clientWidth, ch = this.canvas.clientHeight;
+    var minor = this._cssW === cw && this._cssH && Math.abs(ch - this._cssH) < this._cssH * 0.2;
+    var again = this.w != null && this.w > 1 && !this.opts.size && this.opts.resetOnResize !== false && !minor;
+    this._cssW = cw; this._cssH = ch;
     this.w = w; this.h = h;
     this.canvas.width = w; this.canvas.height = h;
     // The embed changed size: maybe it crossed into another breakpoint.
@@ -4883,6 +4997,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
     this.pool = {};
     Object.keys(this.states).forEach(function (id) { self._freeState(self.states[id]); });
     this.states = {};
+    if (again) this.restart();
   };
 
   Renderer.prototype._target = function (w, h, float, clear, clampEdges) {
@@ -4962,6 +5077,22 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
     var fl = prog.u('uFilter');
     if (fl) gl.uniform1i(fl, prog.filter ? 1 : 0);
     gl.uniform1f(prog.u('uPress'), this.mouse.press || 0);
+    var cn = prog.u('uCurN');
+    if (cn) {
+      var list = [], rm = this._realMouse || this.mouse, H = this.scene.height || 1;
+      if (this.scene.mouseCursor !== false) list.push({ m: rm, size: 1, grow: 0 });
+      var cl = this._curLayers || [];
+      list = list.concat(cl.slice(Math.max(0, cl.length - (MAX_CURSORS - list.length))));
+      var P = new Float32Array(16), V = new Float32Array(16), S = new Float32Array(16), self = this;
+      list.forEach(function (c, i) {
+        P[i * 4] = c.m.x; P[i * 4 + 1] = c.m.y; P[i * 4 + 2] = c.m.press || 0;
+        V[i * 4] = c.m.vx || 0; V[i * 4 + 1] = c.m.vy || 0; V[i * 4 + 2] = c.size; V[i * 4 + 3] = c.grow / H;
+        if (c.sdf) { self._curSlot(i, c.sdf); S[i * 4] = c.rot; S[i * 4 + 1] = c.sdf.s; S[i * 4 + 2] = c.sdf.W; S[i * 4 + 3] = c.sdf.H; }
+      });
+      gl.uniform1i(cn, list.length);
+      gl.uniform4fv(prog.u('uCur'), P); gl.uniform4fv(prog.u('uCurV'), V); gl.uniform4fv(prog.u('uCurS'), S);
+      if (this._curAtlas) { gl.activeTexture(gl.TEXTURE4); gl.bindTexture(gl.TEXTURE_2D, this._curAtlas); gl.uniform1i(prog.u('uCurTex'), 4); }
+    }
     gl.uniform1f(prog.u('uDt'), Math.min(this._dt || 1 / 60, 0.1));
     gl.uniform2f(prog.u('uFrameRes'), this.w, this.h);
   };
@@ -5123,9 +5254,673 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
   /** Parallax + float offset of a content layer, in UV units (y up). */
   Renderer.prototype.offset = function (L) {
     var m = this.mouse, p = L.parallax || 0, s = this.springs && this.springs[L.id];
-    return [(m.x - 0.5) * p * 0.1 + (s ? s.x : 0),
+    var o = [(m.x - 0.5) * p * 0.1 + (s ? s.x : 0),
       (m.y - 0.5) * p * 0.1 + Math.sin(this.phase(L, 'floatSpeed', L.floatSpeed || 0) * 2) * (L.floatAmp || 0) * 0.02 + (s ? s.y : 0)];
+    // Physical objects: where the simulation has moved them from their design position.
+    var sc = this.scene, b = isBody(L) && sc && this._physPose(L), bb = b && this.bbox(L.id);
+    if (bb) {
+      o[0] += (b.x - bb.x) / sc.width; o[1] -= (b.y - bb.y) / sc.height;
+      var tc = this._tfComp && this._tfComp(L); if (tc) { o[0] -= tc[0]; o[1] += tc[1]; }
+    }
+    // Stuck to the cursor (without physics): the layer's centre sits on the pointer.
+    else if (L.stick && sc) {
+      var bx = L.type === 'group' ? this.layerBox(Object.assign({}, L, { stick: false })) : this.bbox(L.id);
+      if (bx) { var dm = this._stickPoint(); o[0] = (dm.x + (+L.stickX || 0) - bx.x) / sc.width; o[1] = -(dm.y + (+L.stickY || 0) - bx.y) / sc.height; }
+    }
+    return o;
   };
+  /** "Hide the mouse in the frame", and no page scrolling while dragging physical objects on touch screens. */
+  Renderer.prototype._pointerStyle = function () {
+    var c = this.canvas, sc = this.scene; if (!c || !c.style || this.mouseSource || !sc) return;
+    var hide = !!sc.hideCursor && !this.showCursor, drag = false;
+    walk(sc.layers, function (L) { if (L.physics && L.physDrag !== false && L.physType !== 'static') drag = true; });
+    c.style.cursor = hide ? 'none' : '';
+    c.style.touchAction = drag && this.dragBodies !== false ? 'none' : '';
+    var host = this._linkHost; if (host && host.style) host.style.cursor = hide ? 'none' : '';
+    var pool = this._anchors || {};
+    Object.keys(pool).forEach(function (id) { pool[id].style.cursor = hide ? 'none' : 'pointer'; });
+  };
+  /* ---------------- outlines: a layer's drawn shape as a small pixel mask ---------------- */
+  var MASK_SKIP = { x: 1, y: 1, rotation: 1, opacity: 1, blend: 1, name: 1, visible: 1, locked: 1, mods: 1, bp: 1, parallax: 1, floatAmp: 1, floatSpeed: 1,
+    follow: 1, springStiffness: 1, springDamping: 1, stick: 1, stickX: 1, stickY: 1, asCursor: 1, cursorSize: 1, cursorGrow: 1, cursorPress: 1, cursorShape: 1,
+    link: 1, collapsed: 1, physics: 1, physType: 1, physBounce: 1, physFriction: 1, physMass: 1, physDrag: 1, physLockRot: 1, physShape: 1, softness: 1 };
+  /**
+   * The layer's own pixels (unrotated, around its box centre) as a mask about `cells` cells across, with a 2-cell margin.
+   * Returns { W, H, s: cells per design px, a: Uint8Array of 0/1 } or null while there's nothing drawn yet.
+   */
+  Renderer.prototype._alphaMask = function (L, cells) {
+    if (typeof document === 'undefined') return null;
+    var bb = L.type === 'group' ? this.layerBox(L) : this.bbox(L.id);
+    if (!bb || !(bb.w > 0) || !(bb.h > 0)) return null;
+    var key = JSON.stringify(L, function (k, v) { return MASK_SKIP[k] ? undefined : v; }) + '|' + Math.round(bb.w) + 'x' + Math.round(bb.h) + '|' + this.assetVersion + '|' + cells;
+    var C = this._masks || (this._masks = {}), c = C[L.id];
+    if (c && c.key === key) return c.m;
+    var sc = 1, s = cells / Math.max(bb.w, bb.h), pad = 2;
+    var W = Math.max(3, Math.ceil(bb.w * s)) + pad * 2, H = Math.max(3, Math.ceil(bb.h * s)) + pad * 2, a = new Uint8Array(W * H), any = false;
+    if (L.type === 'group' || L.type === 'model' || L.extrude) {
+      // Groups: their box. 3D: an ellipse filling their box.
+      for (var j = 0; j < H; j++) for (var i = 0; i < W; i++) {
+        var u = (i + 0.5 - W / 2) / (W / 2 - pad), v = (j + 0.5 - H / 2) / (H / 2 - pad);
+        var inside = L.type === 'group' ? Math.abs(u) <= 1 && Math.abs(v) <= 1 : u * u + v * v <= 1;
+        if (inside) { a[j * W + i] = 1; any = true; }
+      }
+    } else {
+      var cv = this._maskCanvas || (this._maskCanvas = document.createElement('canvas'));
+      cv.width = W; cv.height = H;
+      var ctx = cv.getContext('2d', { willReadFrequently: true });
+      ctx.clearRect(0, 0, W, H);
+      // Where the picture was drawn from: physical layers are drawn unrotated at the frame centre.
+      var sw = this.scene.width, sh = this.scene.height, body = isBody(L);
+      var ax = body ? sw / 2 : (L.x == null ? 0.5 : L.x) * sw, ay = body ? sh / 2 : (L.y == null ? 0.5 : L.y) * sh;
+      var r = (bb.rot || 0) * Math.PI / 180, dx = bb.x - ax, dy = bb.y - ay, cs = Math.cos(r), sn = Math.sin(r);
+      var lx = cs * dx + sn * dy, ly = -sn * dx + cs * dy, fw = W / s, fh = H / s;
+      var FL = Object.assign({}, L, { x: (fw / 2 - lx) / fw, y: (fh / 2 - ly) / fh, rotation: 0, softness: 0, textAnim: 'none' });
+      var fs = Object.assign({}, this.scene, { width: fw, height: fh, fit: 'cover' });
+      try {
+        drawContent(ctx, FL, W, H, fs, this);
+        var px = ctx.getImageData(0, 0, W, H).data;
+        for (var k = 0; k < W * H; k++) if (px[k * 4 + 3] > 96) { a[k] = 1; any = true; }
+      } catch (e) {
+        // Pixels we may not read (an image from another site): use the box.
+        for (var j2 = pad; j2 < H - pad; j2++) for (var i2 = pad; i2 < W - pad; i2++) a[j2 * W + i2] = 1;
+        any = true;
+      }
+    }
+    if (!any) return null;
+    void sc;
+    var m = { W: W, H: H, s: s, a: a, id: L.id + ':' + key.length + ':' + (++maskSerial) };
+    C[L.id] = { key: key, m: m };
+    return m;
+  };
+  var maskSerial = 0;
+  /** A cursor layer's brush outline: distance (in cells) from its shape, 0 inside, packed in a 64×64 slot. */
+  Renderer.prototype._cursorSdf = function (L) {
+    var M = this._alphaMask(L, 60); if (!M) return null;
+    if (M.sdf) return M;
+    var W = M.W, H = M.H, A = M.a, edge = [];
+    for (var j = 0; j < H; j++) for (var i = 0; i < W; i++) {
+      if (!A[j * W + i]) continue;
+      if (i === 0 || j === 0 || i === W - 1 || j === H - 1 || !A[j * W + i - 1] || !A[j * W + i + 1] || !A[(j - 1) * W + i] || !A[(j + 1) * W + i]) edge.push(i, j);
+    }
+    var out = new Uint8Array(64 * 64 * 4);
+    for (var y = 0; y < 64; y++) for (var x = 0; x < 64; x++) {
+      var d = 0;
+      if (x >= W || y >= H) d = 64;
+      else if (!A[y * W + x]) {
+        var best = 1e9;
+        for (var e = 0; e < edge.length; e += 2) { var ex = edge[e] - x, ey = edge[e + 1] - y, dd = ex * ex + ey * ey; if (dd < best) best = dd; }
+        d = Math.max(0, Math.sqrt(best) - 0.5);
+      }
+      out[(y * 64 + x) * 4] = Math.min(255, Math.round(d / 64 * 255));
+    }
+    M.sdf = out;
+    return M;
+  };
+
+  /** The design-pose centre of a layer in canvas UV (y up): the point physics rotation turns around. */
+  Renderer.prototype._spinPivot = function (L) {
+    var b = this.bbox(L.id); if (!b) return null;
+    var sc = this.scene, k = this.fitK(this.w, this.h);
+    return [((this.w - sc.width * k) / 2 + b.x * k) / this.w, 1 - ((this.h - sc.height * k) / 2 + b.y * k) / this.h];
+  };
+  /**
+   * Where stuck layers go: the pointer itself, without the scene's mouse smoothing (a custom cursor mustn't lag).
+   */
+  Renderer.prototype._stickPoint = function () {
+    // Always the real pointer — also when "Mouse cursor" is off (that only stops the mouse acting as a brush)
+    // and inside groups with cursor layers.
+    var m = this._realMouse || this.mouse;
+    if (this.mouseSource || m.tx == null) { var sx = this.scene, kk = this.fitK(this.w, this.h); return { x: (m.x * this.w - (this.w - sx.width * kk) / 2) / kk, y: ((1 - m.y) * this.h - (this.h - sx.height * kk) / 2) / kk }; }
+    var sc = this.scene, k = this.fitK(this.w, this.h);
+    return { x: (m.tx * this.w - (this.w - sc.width * k) / 2) / k, y: ((1 - m.ty) * this.h - (this.h - sc.height * k) / 2) / k };
+  };
+  /** Pointer position in design px from the smoothed pointer. */
+  Renderer.prototype._designMouse = function () {
+    var sc = this.scene, k = this.fitK(this.w, this.h), m = this.mouse;
+    return { x: (m.x * this.w - (this.w - sc.width * k) / 2) / k, y: ((1 - m.y) * this.h - (this.h - sc.height * k) / 2) / k };
+  };
+  /**
+   * Layer offsets are fractions of the design frame; the shaders work in fractions of the canvas. They're the same
+   * when the canvas shows exactly the frame (the editor), but not when an embed crops or extends it.
+   */
+  Renderer.prototype._f2c = function () {
+    var sc = this.scene, k = this.fitK(this.w, this.h);
+    return [sc.width * k / (this.w || 1), sc.height * k / (this.h || 1)];
+  };
+  /** Extra rotation (degrees) the physics simulation has given a layer. */
+  Renderer.prototype.extraRot = function (L) {
+    var b = isBody(L) && this._physPose(L), bb = b && this.bbox(L.id);
+    return bb ? b.a * 180 / Math.PI - (bb.rot || 0) : 0;
+  };
+
+  /* ------------------------------------------------------------------ */
+  /*  2D physics: layers as rigid bodies (gravity, collisions, grab & throw) */
+  /* ------------------------------------------------------------------ */
+  //@part:physics
+  /*
+   * A small impulse-based rigid-body engine in design pixels (y down, angles clockwise like layer rotation).
+   * A body is one or more convex parts (circles or convex polygons) around its centre of mass. Outlines of any
+   * layer (vector art, text, transparent images) are traced from its pixels and split into convex pieces.
+   * Contacts come from SAT with face clipping, resolved with sequential impulses (restitution + Coulomb friction)
+   * and a gentle positional correction.
+   */
+  function polyArea(v) { var a = 0; for (var i = 0; i < v.length; i++) { var p = v[i], q = v[(i + 1) % v.length]; a += p[0] * q[1] - q[0] * p[1]; } return a / 2; }
+  function polyCentroid(v) {
+    var a = 0, cx = 0, cy = 0;
+    for (var i = 0; i < v.length; i++) { var p = v[i], q = v[(i + 1) % v.length], cr = p[0] * q[1] - q[0] * p[1]; a += cr; cx += (p[0] + q[0]) * cr; cy += (p[1] + q[1]) * cr; }
+    return Math.abs(a) < 1e-9 ? [v[0][0], v[0][1]] : [cx / (3 * a), cy / (3 * a)];
+  }
+  function polyInertia(v, m) { // about the origin
+    var num = 0, den = 0;
+    for (var i = 0; i < v.length; i++) {
+      var p = v[i], q = v[(i + 1) % v.length], cr = Math.abs(p[0] * q[1] - q[0] * p[1]);
+      num += cr * (p[0] * p[0] + p[0] * q[0] + q[0] * q[0] + p[1] * p[1] + p[1] * q[1] + q[1] * q[1]);
+      den += cr;
+    }
+    return den ? m * num / (6 * den) : m;
+  }
+  function cross3(a, b, c) { return (b[0] - a[0]) * (c[1] - b[1]) - (b[1] - a[1]) * (c[0] - b[0]); }
+  /** Convex hull (positive area, y down), monotone chain. */
+  function convexHull(pts) {
+    var P = pts.slice().sort(function (a, b) { return a[0] - b[0] || a[1] - b[1]; }), lo = [], hi = [];
+    var cr = function (o, a, b) { return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]); };
+    P.forEach(function (p) { while (lo.length >= 2 && cr(lo[lo.length - 2], lo[lo.length - 1], p) <= 0) lo.pop(); lo.push(p); });
+    for (var i = P.length - 1; i >= 0; i--) { var p = P[i]; while (hi.length >= 2 && cr(hi[hi.length - 2], hi[hi.length - 1], p) <= 0) hi.pop(); hi.push(p); }
+    var h = lo.slice(0, -1).concat(hi.slice(0, -1));
+    if (polyArea(h) < 0) h.reverse();
+    return h;
+  }
+  /** Outline loops of a pixel mask (marching squares through cell centres). Only outer outlines; holes are left out. */
+  function maskLoops(M) {
+    var W = M.W, H = M.H, A = M.a, segs = {};
+    var v = function (i, j) { return i < 0 || j < 0 || i >= W || j >= H ? 0 : A[j * W + i]; };
+    var add = function (p, q) { segs[p[0] + ',' + p[1]] = q; };
+    for (var j = -1; j < H; j++) for (var i = -1; i < W; i++) {
+      var c = v(i, j) * 8 + v(i + 1, j) * 4 + v(i + 1, j + 1) * 2 + v(i, j + 1);
+      if (!c || c === 15) continue;
+      var T = [i + 0.5, j], Rr = [i + 1, j + 0.5], B = [i + 0.5, j + 1], Lf = [i, j + 0.5];
+      switch (c) {
+        case 1: add(B, Lf); break; case 2: add(Rr, B); break; case 3: add(Rr, Lf); break;
+        case 4: add(T, Rr); break; case 5: add(T, Rr); add(B, Lf); break; case 6: add(T, B); break;
+        case 7: add(T, Lf); break; case 8: add(Lf, T); break; case 9: add(B, T); break;
+        case 10: add(Lf, T); add(Rr, B); break; case 11: add(Rr, T); break; case 12: add(Lf, Rr); break;
+        case 13: add(B, Rr); break; case 14: add(Lf, B); break;
+      }
+    }
+    var loops = [], used = {};
+    Object.keys(segs).forEach(function (k0) {
+      if (used[k0]) return;
+      var loop = [], k = k0, guard = 0;
+      while (!used[k] && guard++ < 100000) {
+        used[k] = 1; var p = k.split(','); loop.push([+p[0], +p[1]]);
+        var q = segs[k]; if (!q) break; k = q[0] + ',' + q[1];
+      }
+      if (loop.length >= 3) loops.push(loop);
+    });
+    if (!loops.length) return [];
+    // The biggest loop is an outer outline; outlines wind the same way, holes the other way.
+    var areas = loops.map(polyArea), big = 0;
+    areas.forEach(function (a, i) { if (Math.abs(a) > Math.abs(areas[big])) big = i; });
+    var sg = areas[big] > 0 ? 1 : -1;
+    return loops.filter(function (l, i) { return areas[i] * sg > 0.5; }).map(function (l) { return sg > 0 ? l : l.reverse(); });
+  }
+  /** Ramer–Douglas–Peucker simplification of a closed loop. */
+  function simplifyLoop(loop, eps) {
+    var n = loop.length; if (n < 8) return loop;
+    var far = 0, fd = -1;
+    for (var i = 1; i < n; i++) { var d = Math.hypot(loop[i][0] - loop[0][0], loop[i][1] - loop[0][1]); if (d > fd) { fd = d; far = i; } }
+    var rdp = function (pts) {
+      var a = pts[0], b = pts[pts.length - 1], bi = -1, bd = eps, dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy) || 1e-9;
+      for (var i = 1; i < pts.length - 1; i++) { var d = Math.abs((pts[i][0] - a[0]) * dy - (pts[i][1] - a[1]) * dx) / l; if (d > bd) { bd = d; bi = i; } }
+      if (bi < 0) return [a, b];
+      var l1 = rdp(pts.slice(0, bi + 1)), l2 = rdp(pts.slice(bi));
+      return l1.slice(0, -1).concat(l2);
+    };
+    var h1 = rdp(loop.slice(0, far + 1)), h2 = rdp(loop.slice(far).concat([loop[0]]));
+    return h1.slice(0, -1).concat(h2.slice(0, -1));
+  }
+  function inTri(p, a, b, c) { return cross3(a, b, p) >= 0 && cross3(b, c, p) >= 0 && cross3(c, a, p) >= 0; }
+  /** Split a simple polygon (positive area) into convex pieces: ear clipping, then merging triangles while they stay convex. */
+  function convexPieces(poly) {
+    var idx = poly.map(function (_, i) { return i; }), tris = [], guard = 0;
+    while (idx.length > 3 && guard++ < 5000) {
+      var found = false;
+      for (var k = 0; k < idx.length; k++) {
+        var ia = idx[(k + idx.length - 1) % idx.length], ib = idx[k], ic = idx[(k + 1) % idx.length];
+        var a = poly[ia], b = poly[ib], c = poly[ic];
+        if (cross3(a, b, c) <= 1e-9) continue;
+        var ok = true;
+        for (var m = 0; m < idx.length && ok; m++) { var im = idx[m]; if (im !== ia && im !== ib && im !== ic && inTri(poly[im], a, b, c)) ok = false; }
+        if (!ok) continue;
+        tris.push([ia, ib, ic]); idx.splice(k, 1); found = true; break;
+      }
+      if (!found) return null; // not a simple polygon
+    }
+    if (idx.length === 3 && cross3(poly[idx[0]], poly[idx[1]], poly[idx[2]]) > 0) tris.push(idx.slice());
+    var convex = function (r) { for (var i = 0; i < r.length; i++) if (cross3(poly[r[i]], poly[r[(i + 1) % r.length]], poly[r[(i + 2) % r.length]]) < -1e-9) return false; return true; };
+    var merged = true;
+    while (merged) {
+      merged = false;
+      for (var x = 0; x < tris.length && !merged; x++) for (var y = x + 1; y < tris.length && !merged; y++) {
+        var P = tris[x], Q = tris[y];
+        for (var e = 0; e < P.length && !merged; e++) {
+          var u = P[e], w = P[(e + 1) % P.length], f = Q.indexOf(w);
+          if (f < 0 || Q[(f + 1) % Q.length] !== u) continue;
+          // P = [.., u, w, ..], Q = [.., w, u, ..]: join along u–w.
+          var p1 = [], p2 = [];
+          for (var s = 0; s < P.length; s++) p1.push(P[(e + 1 + s) % P.length]); // w … u
+          for (var t = 0; t < Q.length; t++) p2.push(Q[(f + 1 + t) % Q.length]); // u … w
+          var R = p1.concat(p2.slice(1, -1));
+          if (convex(R)) { tris[x] = R; tris.splice(y, 1); merged = true; }
+        }
+      }
+    }
+    return tris.map(function (r) { return r.map(function (i) { return poly[i]; }); });
+  }
+  /** Convex parts tracing a layer's drawn outline, in design px around its box centre. `hull` gives one convex outline. */
+  function outlineParts(M, hull) {
+    var loops = maskLoops(M); if (!loops.length) return null;
+    var toLocal = function (p) { return [(p[0] + 0.5 - M.W / 2) / M.s, (p[1] + 0.5 - M.H / 2) / M.s]; };
+    if (hull) {
+      var all = []; loops.forEach(function (l) { all = all.concat(l); });
+      return [convexHull(all).map(toLocal)];
+    }
+    var total = 0; loops.forEach(function (l) { total += polyArea(l); });
+    for (var eps = 0.75, tries = 0; tries < 6; tries++, eps *= 1.6) {
+      var parts = [], bad = false;
+      loops.forEach(function (l) {
+        if (bad || polyArea(l) < Math.max(2, total * 0.004)) return; // specks
+        var sl = simplifyLoop(l, eps);
+        if (sl.length < 3 || polyArea(sl) <= 0) return;
+        var pcs = convexPieces(sl);
+        if (!pcs) pcs = [convexHull(sl)];
+        pcs.forEach(function (pc) { if (pc.length >= 3 && polyArea(pc) > 0.25) parts.push(pc.map(toLocal)); });
+      });
+      if (parts.length && parts.length <= 40) return parts;
+    }
+    return [convexHull([].concat.apply([], loops)).map(toLocal)];
+  }
+  /** Where a physical layer sits before the simulation moves it: its design centre (design px) and angle (radians). */
+  function designPose(L, bb, sc) {
+    var r = (L.rotation || 0) * Math.PI / 180, dx = bb.x - sc.width / 2, dy = bb.y - sc.height / 2, c = Math.cos(r), s = Math.sin(r);
+    return { x: (L.x == null ? 0.5 : L.x) * sc.width + dx * c - dy * s, y: (L.y == null ? 0.5 : L.y) * sc.height + dx * s + dy * c, a: r };
+  }
+  /** A body's box centre (where its picture is drawn) from its centre of mass. */
+  function bodyCentre(b) {
+    var c = Math.cos(b.a), s = Math.sin(b.a);
+    return { x: b.x + c * b.off[0] - s * b.off[1], y: b.y + s * b.off[0] + c * b.off[1], a: b.a };
+  }
+  Renderer.prototype._physPose = function (L) {
+    var b = this._bodies && this._bodies[L.id];
+    if (b) return bodyCentre(b);
+    var bb = this.bbox(L.id);
+    return bb ? designPose(L, bb, this.scene) : null;
+  };
+  /** Collision parts for a layer, around its box centre: [{ circle, r, c: [x, y] } | { v: [[x, y], …] }]. */
+  Renderer.prototype._bodyParts = function (L, bb) {
+    var w = Math.max(2, bb.w), h = Math.max(2, bb.h), kind = L.physShape || 'auto';
+    var box = [{ v: [[-w / 2, -h / 2], [w / 2, -h / 2], [w / 2, h / 2], [-w / 2, h / 2]] }];
+    if (kind === 'circle' || (kind === 'auto' && ((L.type === 'shape' && L.shape === 'ellipse' && Math.abs(w - h) < 0.05 * Math.max(w, h)) || L.type === 'model'))) return [{ circle: true, r: Math.min(w, h) / 2, c: [0, 0] }];
+    if (kind === 'auto' && L.type === 'shape' && (L.shape === 'polygon' || L.shape === 'ellipse')) {
+      var v = [], n = L.shape === 'ellipse' ? 20 : Math.max(3, L.sides | 0);
+      for (var i = 0; i < n; i++) { var a = -Math.PI / 2 + i * 2 * Math.PI / n; v.push([Math.cos(a) * Math.abs(L.width) / 2, Math.sin(a) * Math.abs(L.height) / 2]); }
+      if (polyArea(v) < 0) v.reverse();
+      return [{ v: v }];
+    }
+    var exact = kind === 'outline' || (kind === 'auto' && L.type === 'shape' && (L.shape === 'path' || L.shape === 'star'));
+    if (exact || kind === 'hull') {
+      var M = this._alphaMask(L, 64);
+      var parts = M && outlineParts(M, kind === 'hull');
+      if (parts) return parts.map(function (p) { return { v: p }; });
+      return null; // not drawn yet (e.g. an image still loading): try again later
+    }
+    return box;
+  };
+  /** How far a Transform's "Follow mouse" moves things (frame fractions, y down). */
+  function tfShift(TL, m) {
+    var P = TL.params || {}, f = +P.follow || 0;
+    return [(m.x - (P.anchorX == null ? 0.5 : +P.anchorX)) * f + (+P.followX || 0), ((1 - m.y) - (P.anchorY == null ? 0.5 : +P.anchorY)) * f + (+P.followY || 0)];
+  }
+  /** For each physical layer, the nearest Transform with Follow mouse above it (in its group or an outer one). */
+  function followTransforms(layers) {
+    var map = {};
+    (function scan(list, cur) {
+      for (var i = list.length - 1; i >= 0; i--) {
+        var L = list[i];
+        if (L.visible === false) continue;
+        if (L.type === 'effect' && L.effect === 'transform' && L.params && +L.params.follow > 0) cur = L;
+        else if (L.type === 'group') scan(L.children || [], cur);
+        else if (L.physics && cur) map[L.id] = cur;
+      }
+    })(layers, null);
+    return map;
+  }
+  /**
+   * A physical object under a following Transform chases the cursor itself (so it still collides), and its picture
+   * is held back by the Transform's follow move so it isn't moved twice. Returns that move, or null.
+   */
+  Renderer.prototype._tfComp = function (L) {
+    var b = this._bodies && this._bodies[L.id];
+    if (!b || !b.tf) return null;
+    var sh = tfShift(b.tf, this.mouse), fc = this._f2c();
+    return [sh[0] / fc[0], sh[1] / fc[1]];
+  };
+  /** One collision piece of a body, posed in the world. */
+  function proxy(body, part) { return { body: body, part: part, shape: part.circle ? { circle: true, r: part.r } : { circle: false, v: part.v }, x: 0, y: 0, a: 0 }; }
+  function poseProxy(P) {
+    var b = P.body, pt = P.part;
+    if (pt.circle) { var c = Math.cos(b.a), s = Math.sin(b.a); P.x = b.x + c * pt.c[0] - s * pt.c[1]; P.y = b.y + s * pt.c[0] + c * pt.c[1]; }
+    else { P.x = b.x; P.y = b.y; }
+    P.a = b.a;
+  }
+  function physWorldVerts(b) {
+    if (b.wv && b.wvA === b.a && b.wvX === b.x && b.wvY === b.y) return b.wv;
+    var c = Math.cos(b.a), s = Math.sin(b.a), out = [], nrm = [];
+    b.shape.v.forEach(function (p) { out.push([b.x + c * p[0] - s * p[1], b.y + s * p[0] + c * p[1]]); });
+    for (var i = 0; i < out.length; i++) { var p = out[i], q = out[(i + 1) % out.length], ex = q[0] - p[0], ey = q[1] - p[1], l = Math.hypot(ex, ey) || 1; nrm.push([ey / l, -ex / l]); }
+    b.wv = out; b.wn = nrm; b.wvA = b.a; b.wvX = b.x; b.wvY = b.y;
+    return out;
+  }
+  function physAABB(b) {
+    if (b.shape.circle) return [b.x - b.shape.r, b.y - b.shape.r, b.x + b.shape.r, b.y + b.shape.r];
+    var v = physWorldVerts(b), x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    v.forEach(function (p) { if (p[0] < x0) x0 = p[0]; if (p[0] > x1) x1 = p[0]; if (p[1] < y0) y0 = p[1]; if (p[1] > y1) y1 = p[1]; });
+    return [x0, y0, x1, y1];
+  }
+  // Largest separation of B's vertices along A's face normals: [separation, face index].
+  function maxSep(A, B) {
+    var va = physWorldVerts(A), na = A.wn, vb = physWorldVerts(B), best = -Infinity, bi = 0;
+    for (var i = 0; i < va.length; i++) {
+      var n = na[i], p = va[i], mn = Infinity;
+      for (var j = 0; j < vb.length; j++) { var d = n[0] * (vb[j][0] - p[0]) + n[1] * (vb[j][1] - p[1]); if (d < mn) mn = d; }
+      if (mn > best) { best = mn; bi = i; }
+    }
+    return [best, bi];
+  }
+  function clipSeg(p1, p2, n, off) { // keep the part of segment where dot(n, p) <= off
+    var d1 = n[0] * p1[0] + n[1] * p1[1] - off, d2 = n[0] * p2[0] + n[1] * p2[1] - off, out = [];
+    if (d1 <= 0) out.push(p1); if (d2 <= 0) out.push(p2);
+    if (d1 * d2 < 0) { var t = d1 / (d1 - d2); out.push([p1[0] + (p2[0] - p1[0]) * t, p1[1] + (p2[1] - p1[1]) * t]); }
+    return out;
+  }
+  function collidePolys(A, B) {
+    var sa = maxSep(A, B); if (sa[0] > 0) return null;
+    var sb = maxSep(B, A); if (sb[0] > 0) return null;
+    var flip = sb[0] > sa[0] + 0.1, R = flip ? B : A, I = flip ? A : B, fi = flip ? sb[1] : sa[1];
+    var rv = physWorldVerts(R), rn = R.wn[fi], iv = physWorldVerts(I), inn = I.wn;
+    // Incident face: the one most opposed to the reference normal.
+    var ii = 0, md = Infinity;
+    for (var k = 0; k < inn.length; k++) { var d = inn[k][0] * rn[0] + inn[k][1] * rn[1]; if (d < md) { md = d; ii = k; } }
+    var i1 = iv[ii], i2 = iv[(ii + 1) % iv.length], r1 = rv[fi], r2 = rv[(fi + 1) % rv.length];
+    var tx = r2[0] - r1[0], ty = r2[1] - r1[1], tl = Math.hypot(tx, ty) || 1; tx /= tl; ty /= tl;
+    var pts = clipSeg(i1, i2, [-tx, -ty], -(tx * r1[0] + ty * r1[1]));
+    if (pts.length < 2) return null;
+    pts = clipSeg(pts[0], pts[1], [tx, ty], tx * r2[0] + ty * r2[1]);
+    if (pts.length < 2) return null;
+    var off = rn[0] * r1[0] + rn[1] * r1[1], cps = [];
+    pts.forEach(function (p) { var sep = rn[0] * p[0] + rn[1] * p[1] - off; if (sep <= 0) cps.push({ p: p, pen: -sep }); });
+    if (!cps.length) return null;
+    return { n: flip ? [-rn[0], -rn[1]] : rn, pts: cps };
+  }
+  function collideCirclePoly(C, P, flip) { // returns contact with normal from C to P (or reversed when flip)
+    var v = physWorldVerts(P), n = P.wn, r = C.shape.r, best = -Infinity, bi = 0;
+    for (var i = 0; i < v.length; i++) { var s = n[i][0] * (C.x - v[i][0]) + n[i][1] * (C.y - v[i][1]); if (s > r) return null; if (s > best) { best = s; bi = i; } }
+    var a = v[bi], b = v[(bi + 1) % v.length], nn, cp, pen;
+    if (best < 1e-6) { nn = [-n[bi][0], -n[bi][1]]; pen = r - best; cp = [C.x - n[bi][0] * best, C.y - n[bi][1] * best]; }
+    else {
+      var ex = b[0] - a[0], ey = b[1] - a[1], t = ((C.x - a[0]) * ex + (C.y - a[1]) * ey) / (ex * ex + ey * ey || 1);
+      t = Math.max(0, Math.min(1, t));
+      var qx = a[0] + ex * t, qy = a[1] + ey * t, dx = C.x - qx, dy = C.y - qy, dl = Math.hypot(dx, dy);
+      if (dl > r) return null;
+      nn = dl > 1e-9 ? [-dx / dl, -dy / dl] : [-n[bi][0], -n[bi][1]]; pen = r - dl; cp = [qx, qy];
+    }
+    return { n: flip ? [-nn[0], -nn[1]] : nn, pts: [{ p: cp, pen: pen }] };
+  }
+  function collide(A, B) {
+    if (A.shape.circle && B.shape.circle) {
+      var dx = B.x - A.x, dy = B.y - A.y, d = Math.hypot(dx, dy), rr = A.shape.r + B.shape.r;
+      if (d >= rr) return null;
+      var n = d > 1e-9 ? [dx / d, dy / d] : [0, 1];
+      return { n: n, pts: [{ p: [A.x + n[0] * A.shape.r, A.y + n[1] * A.shape.r], pen: rr - d }] };
+    }
+    if (A.shape.circle) return collideCirclePoly(A, B, false);
+    if (B.shape.circle) return collideCirclePoly(B, A, true);
+    return collidePolys(A, B);
+  }
+  function pointInBody(p, b, tol) {
+    tol = tol || 4;
+    return b.prox.some(function (P) {
+      if (P.shape.circle) return Math.hypot(p.x - P.x, p.y - P.y) <= P.shape.r + tol;
+      var v = physWorldVerts(P), n = P.wn;
+      for (var i = 0; i < v.length; i++) if (n[i][0] * (p.x - v[i][0]) + n[i][1] * (p.y - v[i][1]) > tol) return false;
+      return true;
+    });
+  }
+  function staticBody(x, y, parts, rest, fric) {
+    var b = { x: x, y: y, a: 0, vx: 0, vy: 0, w: 0, im: 0, ii: 0, rest: rest, fric: fric, off: [0, 0] };
+    b.prox = parts.map(function (pt) { return proxy(b, pt); });
+    return b;
+  }
+  function wallBody(x, y, w, h) { return staticBody(x, y, [{ v: [[-w / 2, -h / 2], [w / 2, -h / 2], [w / 2, h / 2], [-w / 2, h / 2]] }], 0.2, 0.6); }
+  function bodyBox(b) {
+    var x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    b.prox.forEach(function (P) { poseProxy(P); var q = physAABB(P); P.box = q; if (q[0] < x0) x0 = q[0]; if (q[1] < y0) y0 = q[1]; if (q[2] > x1) x1 = q[2]; if (q[3] > y1) y1 = q[3]; });
+    return [x0, y0, x1, y1];
+  }
+  function overlap(a, b) { return !(a[0] > b[2] || b[0] > a[2] || a[1] > b[3] || b[1] > a[3]); }
+
+  /** Keep one body per physical layer in sync with the scene (created from its drawn bounds, reset when its design pose is edited). */
+  Renderer.prototype._syncBodies = function () {
+    var self = this, B = this._bodies || (this._bodies = {}), seen = {}, sc0 = this.scene, tfs = followTransforms(this.scene.layers);
+    walk(this.scene.layers, function (L) {
+      if (!isBody(L)) return;
+      var e = self.content[L.id], bb = e && e.bbox;
+      if (!bb) return;
+      seen[L.id] = 1;
+      var shapeKey = [Math.round(bb.w), Math.round(bb.h), L.physShape, L.type, L.shape, L.sides, L.width, L.height, self.assetVersion, e.sig && e.sig.length].join(',');
+      var pose = [L.x, L.y, L.rotation || 0].join(','), b = B[L.id], fresh = false;
+      var st = L.physType === 'static', dens = Math.max(0.05, L.physMass == null ? 1 : +L.physMass);
+      if (!b || b.pose !== pose) {
+        // New, or moved in the editor: start again from the design position.
+        var dp = designPose(L, bb, sc0);
+        b = B[L.id] = { id: L.id, x: dp.x, y: dp.y, a: dp.a, vx: 0, vy: 0, w: 0, pose: pose, shapeKey: '', off: [0, 0], home: dp };
+        fresh = true;
+      }
+      if (b.shapeKey !== shapeKey || !b.prox) {
+        var parts = self._bodyParts(L, bb), done = !!parts;
+        if (!parts) { var w = Math.max(2, bb.w), h = Math.max(2, bb.h); parts = [{ v: [[-w / 2, -h / 2], [w / 2, -h / 2], [w / 2, h / 2], [-w / 2, h / 2]] }]; }
+        // Mass, centre of mass and rotational inertia of all the parts together.
+        var M = 0, cx = 0, cy = 0;
+        parts.forEach(function (pt) {
+          pt.area = pt.circle ? Math.PI * pt.r * pt.r : Math.abs(polyArea(pt.v));
+          pt.cen = pt.circle ? pt.c : polyCentroid(pt.v);
+          M += pt.area; cx += pt.cen[0] * pt.area; cy += pt.cen[1] * pt.area;
+        });
+        cx /= M || 1; cy /= M || 1;
+        var I = 0, mass = Math.max(1e-3, M / 10000 * dens);
+        parts.forEach(function (pt) {
+          var pm = mass * pt.area / (M || 1);
+          if (pt.circle) { pt.c = [pt.c[0] - cx, pt.c[1] - cy]; I += pm * (pt.r * pt.r / 2 + pt.c[0] * pt.c[0] + pt.c[1] * pt.c[1]); }
+          else { pt.v = pt.v.map(function (q) { return [q[0] - cx, q[1] - cy]; }); I += polyInertia(pt.v, pm); }
+        });
+        // Keep the picture where it is while the outline changes.
+        var ctr = fresh ? b.home : bodyCentre(b), ca = Math.cos(b.a), sa = Math.sin(b.a);
+        b.off = [-cx, -cy];
+        b.x = ctr.x - (ca * b.off[0] - sa * b.off[1]); b.y = ctr.y - (sa * b.off[0] + ca * b.off[1]);
+        b.prox = parts.map(function (pt) { return proxy(b, pt); });
+        b.m = mass; b.I = Math.max(I, 1e-3); b.shapeKey = done ? shapeKey : '';
+      }
+      b.im = st ? 0 : 1 / b.m; b.ii = st || L.physLockRot ? 0 : 1 / b.I;
+      b.rest = L.physBounce == null ? 0.3 : +L.physBounce; b.fric = L.physFriction == null ? 0.4 : +L.physFriction;
+      b.drag = L.physDrag !== false && !st; b.stick = !!L.stick && !st; b.L = L;
+      b.follow = st ? 0 : +L.follow || 0;
+      b.tf = st ? null : tfs[L.id] || null;
+    });
+    Object.keys(B).forEach(function (id) { if (!seen[id]) delete B[id]; });
+    return B;
+  };
+  Renderer.prototype._physStep = function (dt) {
+    if (!this.scene || !dt) return;
+    var has = false; walk(this.scene.layers, function (L) { if (L.physics) has = true; });
+    if (!has) { this._bodies = null; return; }
+    var B = this._syncBodies(), list = Object.keys(B).map(function (k) { return B[k]; });
+    if (!list.length) return;
+    var sc = this.scene, W = sc.width, H = sc.height, self = this;
+    var g = (sc.physGravity == null ? 1 : +sc.physGravity) * 1800, ga = (sc.physGravityDir == null ? 90 : +sc.physGravityDir) * Math.PI / 180;
+    var gx = Math.cos(ga) * g, gy = Math.sin(ga) * g;
+    // Walls: at the edges of what's visible (the window/embed edges — on a site where "Crop to fill" cuts the frame,
+    // the floor is the bottom of the screen area), or at the frame's own edges.
+    var bx0 = 0, by0 = 0, bx1 = W, by1 = H;
+    if (sc.physBounds !== 'frame') {
+      var kf = this.fitK(this.w, this.h);
+      bx0 = -(this.w - W * kf) / 2 / kf; by0 = -(this.h - H * kf) / 2 / kf; bx1 = bx0 + this.w / kf; by1 = by0 + this.h / kf;
+    }
+    var bw = bx1 - bx0, bh = by1 - by0, bcx = (bx0 + bx1) / 2, bcy = (by0 + by1) / 2;
+    var walls = sc.physWalls || 'sides', T = 4000, wl = [];
+    if (walls !== 'none') wl.push(wallBody(bcx, by1 + T / 2, bw + 2 * T, T));
+    if (walls === 'box' || walls === 'sides') { wl.push(wallBody(bx0 - T / 2, bcy, T, bh + 2 * T)); wl.push(wallBody(bx1 + T / 2, bcy, T, bh + 2 * T)); }
+    if (walls === 'box') wl.push(wallBody(bcx, by0 - T / 2, bw + 2 * T, T));
+    // The pointer: grab-and-throw, an optional pusher, and layers stuck to (or springing after) the cursor.
+    var p = this._designPoint(), pv = this._pPrev || p, pvx = (p.x - pv.x) / dt, pvy = (p.y - pv.y) / dt, dm = this._designMouse();
+    this._pPrev = p;
+    var over = this._hover || this.mouse.down;
+    var pushR = +sc.physMouse || 0, pusher = null;
+    if (pushR > 0 && over && this.dragBodies !== false) {
+      pusher = staticBody(p.x, p.y, [{ circle: true, r: pushR, c: [0, 0] }], 0.4, 0.2);
+      pusher.vx = pvx; pusher.vy = pvy;
+    }
+    var toCentre = function (b, cx, cy) { var c = Math.cos(b.a), s = Math.sin(b.a); return [cx - (c * b.off[0] - s * b.off[1]), cy - (s * b.off[0] + c * b.off[1])]; };
+    list.forEach(function (b) {
+      b.kin = false;
+      if (b.stick) {
+        // Kinematic: goes exactly where the cursor is and shoves everything else (it can't be pushed back).
+        var L = b.L, t = toCentre(b, p.x + (+L.stickX || 0), p.y + (+L.stickY || 0));
+        b.kin = true; b.vx = (t[0] - b.x) / dt; b.vy = (t[1] - b.y) / dt; b.x = t[0]; b.y = t[1]; b.w = 0;
+        b.im = 0; b.ii = 0;
+      }
+    });
+    var grab = this._grab;
+    if (this.mouse.down && this.dragBodies !== false && !grab && !this._grabTried) {
+      this._grabTried = true;
+      // Grab tolerance: at least ~12 screen pixels, so thin objects and small ones are easy to catch.
+      var cssW = this.canvas.clientWidth || this.w, tol = Math.max(6, 12 * this.w / (cssW * this.fitK(this.w, this.h)));
+      var hit = function (b) {
+        b.prox.forEach(poseProxy);
+        if (pointInBody(p, b, tol)) return true;
+        // Anywhere on the picture's own box counts too (e.g. between the points of a star).
+        var e = self.content[b.id], bb = e && e.bbox; if (!bb) return false;
+        var c = bodyCentre(b), dx = p.x - c.x, dy = p.y - c.y, cs = Math.cos(-c.a), sn = Math.sin(-c.a);
+        return Math.abs(cs * dx - sn * dy) <= bb.w / 2 + tol && Math.abs(sn * dx + cs * dy) <= bb.h / 2 + tol;
+      };
+      var order = [], seenIds = {};
+      walk(sc.layers, function (L) { if (B[L.id] && !seenIds[L.id]) { seenIds[L.id] = 1; order.push(B[L.id]); } });
+      // Exact hits first (topmost layer wins), then box hits.
+      var pick = null;
+      for (var pass = 0; pass < 2 && !pick; pass++) for (var gi = order.length - 1; gi >= 0; gi--) {
+        var cand = order[gi]; if (!cand.drag || cand.kin) continue;
+        cand.prox.forEach(poseProxy);
+        if (pass === 0 ? pointInBody(p, cand, tol) : hit(cand)) { pick = cand; break; }
+      }
+      if (pick) {
+        var gb = pick, c = Math.cos(-gb.a), s = Math.sin(-gb.a), lx = p.x - gb.x, ly = p.y - gb.y;
+        grab = this._grab = { id: gb.id, lx: c * lx - s * ly, ly: s * lx + c * ly };
+      }
+    }
+    if (!this.mouse.down) { this._grab = grab = null; this._grabTried = false; }
+    var all = list.concat(wl), cdt = Math.min(dt, 0.05), steps = Math.max(3, Math.min(8, Math.ceil(cdt * 180))), h = cdt / steps, iters = 8;
+    for (var st = 0; st < steps; st++) {
+      // Forces: gravity, air drag, spring follow, the grab spring.
+      list.forEach(function (b) {
+        if (!b.im || b.kin) return;
+        if (b.tf) {
+          // Under a Transform that follows the mouse: a stiff spring takes the object where the Transform would.
+          var sh = tfShift(b.tf, self.mouse), kf = self.fitK(self.w, self.h); // canvas fractions -> design px
+          var tt = toCentre(b, b.home.x + sh[0] * self.w / kf, b.home.y + sh[1] * self.h / kf), kk = 300, cc = 2 * Math.sqrt(kk) * 0.85;
+          b.vx += (kk * (tt[0] - b.x) - cc * b.vx) * h; b.vy += (kk * (tt[1] - b.y) - cc * b.vy) * h;
+          b.w *= Math.pow(0.95, h * 60);
+        } else if (b.follow > 0) {
+          // Spring follow: a physical spring pulls the object after the cursor (gravity is held off while it does).
+          var L = b.L, k = L.springStiffness == null ? 120 : +L.springStiffness, cd = L.springDamping == null ? 12 : +L.springDamping;
+          var tx = b.home.x + (dm.x - (L.x == null ? 0.5 : L.x) * W) * b.follow, ty = b.home.y + (dm.y - (L.y == null ? 0.5 : L.y) * H) * b.follow;
+          var t = toCentre(b, tx, ty);
+          b.vx += (k * (t[0] - b.x) - cd * b.vx) * h; b.vy += (k * (t[1] - b.y) - cd * b.vy) * h;
+          b.w *= Math.pow(0.97, h * 60);
+        } else { b.vx += gx * h; b.vy += gy * h; }
+        var air = Math.pow(0.995, h * 60); b.vx *= air; b.vy *= air; b.w *= Math.pow(0.99, h * 60);
+      });
+      if (grab && B[grab.id]) {
+        var gb2 = B[grab.id], cs = Math.cos(gb2.a), sn = Math.sin(gb2.a);
+        var rx = cs * grab.lx - sn * grab.ly, ry = sn * grab.lx + cs * grab.ly;
+        var vax = gb2.vx - gb2.w * ry, vay = gb2.vy + gb2.w * rx;
+        var om = 2 * Math.PI * 4, z = 0.7;
+        var fx = gb2.m * (om * om * (p.x - gb2.x - rx) - 2 * z * om * vax), fy = gb2.m * (om * om * (p.y - gb2.y - ry) - 2 * z * om * vay);
+        gb2.vx += fx * gb2.im * h; gb2.vy += fy * gb2.im * h; gb2.w += (rx * fy - ry * fx) * gb2.ii * h * 0.6;
+      }
+      // Contacts: bodies whose bounds overlap, then their pieces.
+      var bodies = pusher ? all.concat([pusher]) : all, contacts = [];
+      var boxes = bodies.map(bodyBox);
+      for (var i = 0; i < bodies.length; i++) for (var j = i + 1; j < bodies.length; j++) {
+        var A = bodies[i], Bj = bodies[j];
+        if (!A.im && !Bj.im) continue;
+        if (!overlap(boxes[i], boxes[j])) continue;
+        for (var pa = 0; pa < A.prox.length; pa++) for (var pb = 0; pb < Bj.prox.length; pb++) {
+          var PA = A.prox[pa], PB = Bj.prox[pb];
+          if (!overlap(PA.box, PB.box)) continue;
+          var m = collide(PA, PB);
+          if (m) contacts.push({ A: A, B: Bj, n: m.n, pts: m.pts.map(function (q) { return { p: q.p, pen: q.pen, jn: 0, jt: 0 }; }), e: Math.max(A.rest, Bj.rest), mu: Math.sqrt(A.fric * Bj.fric) });
+        }
+      }
+      // Velocity solve.
+      contacts.forEach(function (ct) { // restitution target, from the approach speed before solving
+        ct.pts.forEach(function (q) {
+          var A = ct.A, Bb = ct.B, rax = q.p[0] - A.x, ray = q.p[1] - A.y, rbx = q.p[0] - Bb.x, rby = q.p[1] - Bb.y;
+          var dvx = Bb.vx - Bb.w * rby - (A.vx - A.w * ray), dvy = Bb.vy + Bb.w * rbx - (A.vy + A.w * rax);
+          var vn = dvx * ct.n[0] + dvy * ct.n[1];
+          q.bias = vn < -60 ? -ct.e * vn : 0;
+        });
+      });
+      for (var it = 0; it < iters; it++) contacts.forEach(function (ct) {
+        var A = ct.A, Bb = ct.B, n = ct.n, tx = -n[1], ty = n[0];
+        ct.pts.forEach(function (q) {
+          var rax = q.p[0] - A.x, ray = q.p[1] - A.y, rbx = q.p[0] - Bb.x, rby = q.p[1] - Bb.y;
+          var dvx = Bb.vx - Bb.w * rby - (A.vx - A.w * ray), dvy = Bb.vy + Bb.w * rbx - (A.vy + A.w * rax);
+          var rnA = rax * n[1] - ray * n[0], rnB = rbx * n[1] - rby * n[0];
+          var kn = A.im + Bb.im + rnA * rnA * A.ii + rnB * rnB * Bb.ii;
+          if (kn <= 0) return;
+          var vn = dvx * n[0] + dvy * n[1], dj = (-vn + q.bias) / kn;
+          var j0 = q.jn; q.jn = Math.max(0, j0 + dj); dj = q.jn - j0;
+          var px = n[0] * dj, py = n[1] * dj;
+          A.vx -= px * A.im; A.vy -= py * A.im; A.w -= (rax * py - ray * px) * A.ii;
+          Bb.vx += px * Bb.im; Bb.vy += py * Bb.im; Bb.w += (rbx * py - rby * px) * Bb.ii;
+          // Friction
+          dvx = Bb.vx - Bb.w * rby - (A.vx - A.w * ray); dvy = Bb.vy + Bb.w * rbx - (A.vy + A.w * rax);
+          var vt = dvx * tx + dvy * ty, rtA = rax * ty - ray * tx, rtB = rbx * ty - rby * tx;
+          var kt = A.im + Bb.im + rtA * rtA * A.ii + rtB * rtB * Bb.ii;
+          if (kt <= 0) return;
+          var djt = -vt / kt, maxF = ct.mu * q.jn, t0 = q.jt;
+          q.jt = Math.max(-maxF, Math.min(maxF, t0 + djt)); djt = q.jt - t0;
+          px = tx * djt; py = ty * djt;
+          A.vx -= px * A.im; A.vy -= py * A.im; A.w -= (rax * py - ray * px) * A.ii;
+          Bb.vx += px * Bb.im; Bb.vy += py * Bb.im; Bb.w += (rbx * py - rby * px) * Bb.ii;
+        });
+      });
+      // Integrate.
+      list.forEach(function (b) {
+        if (!b.im || b.kin) return;
+        var sp = Math.hypot(b.vx, b.vy), lim = 12000; if (sp > lim) { b.vx *= lim / sp; b.vy *= lim / sp; }
+        b.x += b.vx * h; b.y += b.vy * h; b.a += b.w * h;
+      });
+      // Push overlapping bodies apart (a little each step, so stacks stay calm).
+      contacts.forEach(function (ct) {
+        var A = ct.A, Bb = ct.B, tot = A.im + Bb.im; if (!tot) return;
+        var pen = 0; ct.pts.forEach(function (q) { pen = Math.max(pen, q.pen); });
+        var c2 = Math.max(0, pen - 0.5) * 0.35 / tot;
+        if (A.im && !A.kin) { A.x -= ct.n[0] * c2 * A.im; A.y -= ct.n[1] * c2 * A.im; }
+        if (Bb.im && !Bb.kin) { Bb.x += ct.n[0] * c2 * Bb.im; Bb.y += ct.n[1] * c2 * Bb.im; }
+      });
+    }
+  };
+  //@end
 
   /* ---------------- simulations ---------------- */
 
@@ -5257,7 +6052,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
    */
   function tfInverse(P, a, ux, uy, zoom) {
     var D2R = Math.PI / 180, anx = +P.anchorX, any = 1 - P.anchorY;
-    var qx = (ux - anx - P.moveX) * a, qy = uy - any + +P.moveY;
+    var qx = (ux - anx - P.moveX - (P._fx || 0)) * a, qy = uy - any + +P.moveY + (P._fy || 0);
     if (+P.tiltX || +P.tiltY) {
       var d = 0.5 / Math.tan(Math.min(Math.max(+P.perspective, 1), 170) * D2R * 0.5);
       var ax = P.tiltX * D2R, ay = P.tiltY * D2R, cx = Math.cos(ax), sx = Math.sin(ax), cy = Math.cos(ay), sy = Math.sin(ay);
@@ -5329,6 +6124,13 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
       for (var i = 0; i < n; i++) vals.push(v0 + (v1 - v0) * i / (n - 1));
       axes.push({ k: name, vals: vals });
     });
+    // Follow mouse: the anchor can go anywhere the cursor can.
+    var fo = +base.follow || 0;
+    if (fo > 0) {
+      var fax = +base.anchorX, fay = +base.anchorY, fxs = [], fys = [];
+      for (var fi = 0; fi < 3; fi++) { fxs.push((fi / 2 - fax) * fo + (+base.followX || 0)); fys.push((fi / 2 - fay) * fo + (+base.followY || 0)); }
+      axes.push({ k: '_fx', vals: fxs }); axes.push({ k: '_fy', vals: fys });
+    }
     var combos = axes.reduce(function (m, ax) { return m * ax.vals.length; }, 1);
     var lo = [Infinity, Infinity], hi = [-Infinity, -Infinity], bad = combos > 6000;
     var P = Object.assign({}, base), corners = viewCorners(view);
@@ -5386,7 +6188,71 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
   };
 
   /** Render a list of layers (bottom first) into the targets for `depth`; returns the target holding the result. */
+  /**
+   * Layers that act as the cursor: they're extra brushes alongside the mouse. A cursor layer at the top level acts on the
+   * whole scene; one inside a group only acts on that group's effects (nested groups included). The mouse keeps working
+   * everywhere unless it's turned off in the project settings — then the nearest cursor layer also stands in for it in
+   * single-point things (Follow mouse, mouse-controlled settings).
+   */
+  var MAX_CURSORS = 4;
+  /** Put a cursor outline in slot i of the 256×64 outline atlas (only re-uploaded when it changes). */
+  Renderer.prototype._curSlot = function (i, M) {
+    var gl = this.gl, keys = this._curKeys || (this._curKeys = []);
+    if (!this._curAtlas) {
+      var t = this._curAtlas = gl.createTexture();
+      gl.activeTexture(gl.TEXTURE4); gl.bindTexture(gl.TEXTURE_2D, t);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, 256, 64, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    }
+    if (keys[i] === M.id) return;
+    keys[i] = M.id;
+    gl.activeTexture(gl.TEXTURE4); gl.bindTexture(gl.TEXTURE_2D, this._curAtlas);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false); gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, false);
+    gl.texSubImage2D(gl.TEXTURE_2D, 0, i * 64, 0, 64, 64, gl.RGBA, gl.UNSIGNED_BYTE, M.sdf);
+  };
   Renderer.prototype._renderList = function (layers, depth, parentView) {
+    var found = [];
+    for (var ci = 0; ci < layers.length; ci++) {
+      var CL = layers[ci];
+      if (CL.asCursor && CL.visible !== false && (CONTENT_TYPES[CL.type] || CL.type === 'group')) found.push(CL);
+    }
+    var off = this.scene.mouseCursor === false && this.mouse === this._realMouse, saved = this.mouse;
+    if (!found.length && !off) return this._renderLayers(layers, depth, parentView);
+    // Mouse turned off: until a cursor layer takes over, single-point things rest in the centre.
+    if (off) this.mouse = this._parkedMouse || (this._parkedMouse = { x: 0.5, y: 0.5, tx: 0.5, ty: 0.5, vx: 0, vy: 0, press: 0, speed: 0 });
+    var self = this, savedCur = this._curLayers;
+    var add = found.map(function (L) {
+      var E = self._eff(L), m = self._cursorMouse(E); if (!m) return null;
+      var c = { m: m, size: E.cursorSize == null ? 1 : +E.cursorSize, grow: +E.cursorGrow || 0 };
+      // Brush in the object's own outline (turned with it), unless set to a round brush.
+      if (E.cursorShape !== 'circle') { var M = self._cursorSdf(E), bx = M && self.layerBox(E); if (M && bx) { c.sdf = M; c.rot = (bx.rot || 0) * Math.PI / 180; } }
+      return c;
+    }).filter(Boolean);
+    this._curLayers = (savedCur || []).concat(add);
+    if (this.scene.mouseCursor === false && add.length) this.mouse = add[0].m;
+    try { return this._renderLayers(layers, depth, parentView); } finally { this.mouse = saved; this._curLayers = savedCur; }
+  };
+  Renderer.prototype._cursorMouse = function (L) {
+    var b = this.layerBox(L); if (!b) return null;
+    var CS = this._cursors || (this._cursors = {}), st = CS[L.id], sc = this.scene, k = this.fitK(this.w, this.h);
+    var x = ((this.w - sc.width * k) / 2 + b.x * k) / this.w, y = 1 - ((this.h - sc.height * k) / 2 + b.y * k) / this.h;
+    if (!st) st = CS[L.id] = { frame: -1, m: { x: x, y: y, tx: x, ty: y, vx: 0, vy: 0, press: 0, speed: 0 } };
+    if (st.frame !== this._frameNo) { // once per frame, even when a list is rendered twice (masks)
+      var dt = this._dt || 1 / 60, n = 1 / (dt * 60), m = st.m, base = this._realMouse || this.mouse;
+      var vf = 1 - Math.pow(0.75, dt * 60);
+      m.vx += ((x - m.x) * n - m.vx) * vf; m.vy += ((y - m.y) * n - m.vy) * vf;
+      m.x = m.tx = m.ptx = x; m.y = m.ty = m.pty = y;
+      var pr = L.cursorPress === 'always' ? 1 : L.cursorPress === 'mouse' ? (base.press || 0) : 0;
+      m.press += (pr - m.press) * (1 - Math.pow(0.82, dt * 60));
+      var spd = Math.min(1, Math.hypot(m.vx, m.vy) * 25);
+      m.speed += (spd - m.speed) * (1 - Math.pow(spd > m.speed ? 0.6 : 0.93, dt * 60));
+      ['scroll', 'page', 'audio', 'bass', 'treble', 'down'].forEach(function (kk) { m[kk] = base[kk]; });
+      st.frame = this._frameNo;
+    }
+    return st.m;
+  };
+  Renderer.prototype._renderLayers = function (layers, depth, parentView) {
     var gl = this.gl;
     parentView = parentView || IDV;
     // "Keep background still": everything between the Background and the top-most such Transform moves as one group.
@@ -5449,8 +6315,10 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
         gl.uniform1i(prog.u('uLayer'), 1);
         gl.uniform1f(prog.u('uPremul'), e.kind === 'model' ? 1 : 0);
         gl.uniform4fv(prog.u('uLayerView'), e.view || IDV);
-        var off = this.offset(L);
-        gl.uniform2f(prog.u('uOffset'), off[0], off[1]);
+        var off = this.offset(L), fc = this._f2c();
+        gl.uniform2f(prog.u('uOffset'), off[0] * fc[0], off[1] * fc[1]);
+        var pv = isBody(L) && this._spinPivot(L);
+        gl.uniform3f(prog.u('uSpin'), pv ? pv[0] : 0, pv ? pv[1] : 0, pv ? this.extraRot(L) * Math.PI / 180 : 0);
       } else {
         var d = def(key);
         if (d.sim) {
@@ -5510,14 +6378,15 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
     gl.uniform1i(prog.u('uLayer'), 1);
     gl.uniform4fv(prog.u('uLayerView'), inner.view || IDV);
     gl.uniform4fv(prog.u('uMaskView'), maskE && maskE.view || IDV);
-    gl.uniform2f(prog.u('uOffset'), off[0], off[1]);
+    var fc = this._f2c();
+    gl.uniform2f(prog.u('uOffset'), off[0] * fc[0], off[1] * fc[1]);
     gl.uniform1f(prog.u('uHasMask'), maskE ? 1 : 0);
     gl.uniform1i(prog.u('uMask'), 2);
     gl.activeTexture(gl.TEXTURE2);
     gl.bindTexture(gl.TEXTURE_2D, maskE ? maskE.tex : null);
     if (maskE) {
       var mo = this.offset(maskL);
-      gl.uniform2f(prog.u('uMaskOffset'), mo[0], mo[1]);
+      gl.uniform2f(prog.u('uMaskOffset'), mo[0] * fc[0], mo[1] * fc[1]);
       gl.uniform1i(prog.u('uMaskMode'), Math.max(0, MASK_MODES.indexOf(maskL.maskMode || 'alpha')));
       gl.uniform1f(prog.u('uMaskPremul'), maskL.type === 'model' ? 1 : 0);
       gl.uniform1f(prog.u('uMaskOpacity'), maskL.opacity == null ? 1 : +maskL.opacity);
@@ -5526,6 +6395,8 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
   };
 
   Renderer.prototype.render = function () {
+    this._frameNo = (this._frameNo || 0) + 1;
+    this._realMouse = this.mouse; this._curLayers = null;
     this._ensureSize();
     var gl = this.gl, self = this;
     this.frame = (this.frame || 0) + 1;
@@ -5662,6 +6533,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
       wait(3);
     }
     if (!opts || opts.links !== false) r._linkHost = el;
+    r._pointerStyle();
     if ('IntersectionObserver' in global && (!opts || opts.pauseOffscreen !== false)) {
       r._io = new IntersectionObserver(function (es) { r._visible = es[es.length - 1].isIntersecting; });
       r._io.observe(el);
@@ -5740,7 +6612,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
     __runtime: true,
     load: load,
     scan: scan,
-    version: '1.7.0',
+    version: '1.8.0',
     Renderer: Renderer,
     mount: mount,
     mountLazy: mountLazy,
@@ -6283,7 +7155,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
     if (!changes.length) {
       if (moved.length) return 'Move ' + quoted(moved[0]) + ' ' + (fb.m[moved[0].id].parent ? 'into “' + (fb.m[fb.m[moved[0].id].parent].l.name || 'group') + '”' : 'out of its group');
       if (fa.order.join() !== fb.order.join()) return 'Reorder layers';
-      var sk = ['name', 'width', 'height', 'mouseSmoothing', 'fonts', 'fit', 'breakpoints', 'tilt', 'idle', 'idleSpeed', 'tiltRange', 'tiltRecenter', 'tiltInvertX', 'tiltInvertY', 'palette'].filter(function (k) { return JSON.stringify(A[k]) !== JSON.stringify(B[k]); });
+      var sk = ['name', 'width', 'height', 'mouseSmoothing', 'fonts', 'fit', 'breakpoints', 'tilt', 'idle', 'idleSpeed', 'tiltRange', 'tiltRecenter', 'tiltInvertX', 'tiltInvertY', 'palette', 'hideCursor', 'mouseCursor', 'physGravity', 'physGravityDir', 'physWalls', 'physMouse', 'physBounds'].filter(function (k) { return JSON.stringify(A[k]) !== JSON.stringify(B[k]); });
       if (sk[0] === 'fit') return B.fit === 'contain' ? 'Fit everything' : 'Crop to fill';
       if (sk[0] === 'breakpoints') return 'Edit breakpoint';
       if (sk[0] === 'name') return 'Rename scene';
@@ -6491,7 +7363,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
       bp.width = scene.width; bp.height = scene.height;
       bp.fit = scene.fit || 'cover';
     }
-    ['name', 'mouseSmoothing', 'tilt', 'idle', 'idleSpeed', 'tiltRange', 'tiltRecenter', 'tiltInvertX', 'tiltInvertY'].forEach(function (k) { if (scene[k] === undefined) delete master[k]; else master[k] = scene[k]; });
+    ['name', 'mouseSmoothing', 'tilt', 'idle', 'idleSpeed', 'tiltRange', 'tiltRecenter', 'tiltInvertX', 'tiltInvertY', 'hideCursor', 'mouseCursor', 'physGravity', 'physGravityDir', 'physWalls', 'physMouse', 'physBounds'].forEach(function (k) { if (scene[k] === undefined) delete master[k]; else master[k] = scene[k]; });
   }
   function overrideOf(id) { var ml = masterById(id); return activeBp && ml && ml.bp && ml.bp[activeBp] || null; }
   function isOverridden(id, key) {
@@ -6519,6 +7391,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
     multi = {};
     if (!layerById(selectedId)) selectedId = null;
     R.setScene(scene);
+    R.restart();
     renderAll();
     toast(id ? 'Editing ' + bpName(id) + ' — changes apply to this size and smaller' : 'Editing the Desktop design — changes apply to every size unless overridden', 2600);
   }
@@ -6569,10 +7442,24 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
     bar.appendChild(el('span', { class: 'bp-sep' }));
     var vb = el('button', { class: 'bp-tab', title: 'Rulers, guides and grid', onclick: function () { viewMenu(vb); } }, el('span', { class: 'bp-ic', html: '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 2h12v12H2zM6 2v12M10 2v12M2 6h12M2 10h12" opacity=".8"/></svg>' }), el('span', { text: 'Grid' }));
     bar.appendChild(vb);
+    bar.appendChild(el('button', { class: 'bp-tab play-test' + (playMode ? ' on' : ''), title: 'Play: use the scene like a visitor — grab and throw physical objects, click links and hover triggers. Nothing is selected or moved while it’s on. (P)', onclick: function () { togglePlay(); } },
+      el('span', { class: 'bp-ic', html: '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M4.5 2.8v10.4c0 .5.5.8.9.5l8-5.2a.6.6 0 000-1L5.4 2.3c-.4-.3-.9 0-.9.5z"/></svg>' }), el('span', { text: 'Play' })));
     bar.appendChild(el('button', { class: 'bp-tab phone-test' + (phoneTest ? ' on' : ''), title: 'Phone test: simulate tilting a phone and touch input with your mouse', onclick: function () { togglePhoneTest(); } },
       el('span', { class: 'bp-ic', html: BP_ICONS.mobile }), el('span', { text: 'Phone test' })));
   }
 
+  /* ---- Play mode: the canvas behaves like the published scene (drag physical objects, hidden cursor) ---- */
+  var playMode = false;
+  function togglePlay(on) {
+    playMode = on == null ? !playMode : !!on;
+    R.dragBodies = playMode; R.showCursor = !playMode; R._grab = null;
+    R._pointerStyle();
+    var fr = $('#frame');
+    fr.classList.toggle('play-mode', playMode);
+    fr.style.cursor = playMode && scene.hideCursor ? 'none' : '';
+    if (playMode && !R.playing) setPlaying(true);
+    renderBpBar();
+  }
   /* ---- Phone test: tilt a virtual phone with the mouse; the mouse acts like a finger ---- */
   var phoneTest = false, pad = null, phoneTestPrev;
   function togglePhoneTest(on) {
@@ -7150,6 +8037,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
   var TEXT_PRESET_NAMES = { rise: 'Rise', fade: 'Fade', pop: 'Pop', blur: 'Blur in', typewriter: 'Typewriter', drop: 'Drop & bounce', spin: 'Spin in', slide: 'Slide in' };
   var WEIGHTS = [100, 200, 300, 400, 500, 600, 700, 800, 900].map(function (w) { return [String(w), w]; });
 
+  function hasPhysics() { var f = false; walk(scene.layers, function (l) { if (l.physics) f = true; }); return f; }
   /** Spring follow: the layer chases the cursor with a physical spring. */
   function springFields(l) {
     var on = +l.follow > 0;
@@ -7157,6 +8045,29 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
       { k: 'follow', label: 'Spring follow', type: 'range', min: 0, max: 1, step: 0.01, def: 0, rerender: true, title: 'How far the layer travels toward the cursor, on a bouncy spring. 1 = all the way.' },
       on && { k: 'springStiffness', label: 'Stiffness', type: 'range', min: 5, max: 400, step: 1, def: 120, title: 'Higher = snappier.' },
       on && { k: 'springDamping', label: 'Damping', type: 'range', min: 0, max: 40, step: 0.1, def: 12, title: 'Lower = more bounce and overshoot.' }
+    ].filter(Boolean);
+  }
+
+  /** Cursor & physics: a layer can stand in for the mouse, stick to it, or become a physical object. */
+  function interactFields(l) {
+    var cur = !!l.asCursor, ph = !!l.physics, dyn = ph && l.physType !== 'static';
+    return [
+      { k: 'asCursor', label: 'Is a cursor', type: 'bool', rerender: true, title: 'A second cursor: effects react to this layer the way they react to the mouse — and the mouse keeps working too. At the top level it acts on the whole scene; inside a group only on that group’s effects. (The mouse itself can be turned off in the project settings.)' },
+      cur && { k: 'cursorShape', label: 'Brush shape', type: 'select', options: [['Object’s outline', 'outline'], ['Circle at its centre', 'circle']], def: 'outline', rerender: true, title: 'Outline: the brush is the layer’s own shape (turning with it), grown outward by the settings below. Circle: a round brush at its centre, like the mouse.' },
+      cur && { k: 'cursorSize', label: 'Brush expand', type: 'range', min: 0, max: 5, step: 0.01, def: 1, title: l.cursorShape === 'circle' ? 'Multiplies the brush radius of every effect this cursor acts on (1 = the same size as the mouse’s brush, 2 = twice as big, 0 = only the offset).' : 'How far beyond the outline the brush reaches, as a multiple of each effect’s own brush radius (0 = exactly the outline, 1 = one mouse-brush radius around it).' },
+      cur && { k: 'cursorGrow', label: 'Brush offset', type: 'range', min: -400, max: 400, step: 1, def: 0, title: l.cursorShape === 'circle' ? 'Pixels added to (or, negative, taken off) the brush radius — e.g. half the object’s width so the brush starts at its edge.' : 'Pixels added around the outline (negative shrinks it).' },
+      cur && { k: 'cursorPress', label: 'Pressed', type: 'select', options: [['Never', ''], ['While the mouse button is down', 'mouse'], ['Always', 'always']], def: '', title: 'For effects that react to clicking or holding (ripples, press-to-repel…).' },
+      { k: 'stick', label: 'Stick to cursor', type: 'bool', rerender: true, title: 'The layer’s centre sits exactly on the mouse pointer, with no lag — also when Mouse cursor is off in the project settings. On the canvas, clicks pass through it — select it in the layer list. For a custom cursor, also turn on “Hide mouse” in the scene settings. Use Spring follow instead for a bouncy chase.' },
+      l.stick && { k: 'stickX', label: 'Offset X (px)', type: 'range', min: -600, max: 600, step: 1, def: 0 },
+      l.stick && { k: 'stickY', label: 'Offset Y (px)', type: 'range', min: -600, max: 600, step: 1, def: 0 },
+      { k: 'physics', label: 'Physical object', type: 'bool', rerender: true, title: 'Falls under gravity, collides with other physical layers and the frame edges, and can be grabbed and thrown. Scene settings hold the gravity and walls.' },
+      ph && { k: 'physType', label: 'Body', type: 'select', options: [['Moves (falls, gets pushed)', 'dynamic'], ['Fixed (a floor, wall or ramp)', 'static']], def: 'dynamic', rerender: true },
+      ph && { k: 'physShape', label: 'Collision shape', type: 'select', options: [['Automatic', 'auto'], ['Exact outline', 'outline'], ['Outline, filled in (convex)', 'hull'], ['Box', 'box'], ['Circle', 'circle']], def: 'auto', title: 'Exact outline traces what’s actually drawn — SVG artwork, every letter of a text, the visible part of a transparent image — so things can rest inside cups and hook onto shapes. Filled in wraps it like shrink-wrap (cheaper, no hollows). Automatic: SVGs and stars exact, circles round, polygons their corners, everything else its box.' },
+      dyn && { k: 'physBounce', label: 'Bounciness', type: 'range', min: 0, max: 1, step: 0.01, def: 0.3 },
+      ph && { k: 'physFriction', label: 'Friction', type: 'range', min: 0, max: 1, step: 0.01, def: 0.4, title: 'Low slides like ice, high grips.' },
+      dyn && { k: 'physMass', label: 'Weight', type: 'range', min: 0.1, max: 10, step: 0.05, def: 1, title: 'How heavy for its size: heavier objects push lighter ones around.' },
+      dyn && { k: 'physDrag', label: 'Drag & throw', type: 'bool', def: true, title: 'Visitors can grab it with the mouse or a finger and fling it. (In the editor, turn on Play to try it.)' },
+      dyn && { k: 'physLockRot', label: 'Don’t rotate', type: 'bool', def: false }
     ].filter(Boolean);
   }
 
@@ -7209,7 +8120,8 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
         { k: 'parallax', label: 'Mouse parallax', type: 'range', min: -3, max: 3, step: 0.01, def: 0 },
         { k: 'floatAmp', label: 'Float', type: 'range', min: 0, max: 3, step: 0.01, def: 0 },
         { k: 'floatSpeed', label: 'Float speed', type: 'range', min: 0, max: 4, step: 0.01, def: 1 }
-      ].concat(springFields(l))]
+      ].concat(springFields(l))],
+      ['Cursor & physics', interactFields(l)]
     ].filter(Boolean);
   }
 
@@ -7343,6 +8255,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
       { k: 'floatSpeed', label: 'Float speed', type: 'range', min: 0, max: 4, step: 0.01, def: 1 },
       { k: 'softness', label: 'Blur edges', type: 'range', min: 0, max: 200, step: 1, def: 0 }
     ].concat(springFields(l))]);
+    out.push(['Cursor & physics', interactFields(l)]);
     if (!l.extrude) {
       var st = [
         { k: 'shadow', label: 'Drop shadow', type: 'bool', rerender: true },
@@ -7562,6 +8475,9 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
     var l = layerById(selectedId);
     if (!l) { sceneInspector(box); box.scrollTop = scrollTop; return; }
     var many = selectedRoots();
+    // Back to the project settings (also: Esc, or click an empty part of the canvas).
+    box.appendChild(el('button', { class: 'proj-link', title: 'Project settings — or press Esc / click an empty spot on the canvas', onclick: function () { select(null); } },
+      el('span', { html: '<svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 3L5 8l5 5"/></svg>' }), el('span', { text: 'Project settings' })));
     if (selectedIds().length > 1) { multiInspector(box, many); return; }
 
     var kind = l.type === 'effect' ? (F.EFFECTS[l.effect] ? F.EFFECTS[l.effect].cat + ' effect' : 'Effect') : l.type === 'background' ? 'Background' : l.type === 'model' ? '3D model' : l.type;
@@ -7619,6 +8535,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
         { k: 'floatAmp', label: 'Float', type: 'range', min: 0, max: 3, step: 0.01, def: 0 },
         { k: 'floatSpeed', label: 'Float speed', type: 'range', min: 0, max: 4, step: 0.01, def: 1 }
       ].concat(springFields(l)).map(function (pd) { return field(pd, l, function () { return l[pd.k] == null ? pd.def : l[pd.k]; }, function (v) { l[pd.k] = v; }, pd.rerender, { key: pd.k }); })));
+      box.appendChild(section('Cursor', interactFields(l).filter(function (pd) { return !/^phys/.test(pd.k); }).map(function (pd) { return field(pd, l, function () { return l[pd.k] == null ? pd.def : l[pd.k]; }, function (v) { l[pd.k] = v; }, pd.rerender, { key: pd.k }); })));
       box.appendChild(section('Link', linkFields(l).filter(Boolean).map(function (pd) { return row(pd.label, pd.render()); })));
       box.scrollTop = scrollTop;
       return;
@@ -7720,7 +8637,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
     var applySize = function (w, h) {
       scene.width = clamp(Math.round(w) || 1920, 64, 8192);
       scene.height = clamp(Math.round(h) || 1080, 64, 8192);
-      changed(true); fitStage(); renderInspector();
+      changed(true); fitStage(); renderInspector(); R.restart();
     };
     wIn.addEventListener('change', function () { applySize(+wIn.value, scene.height); });
     hIn.addEventListener('change', function () { applySize(scene.width, +hIn.value); });
@@ -7782,8 +8699,21 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
           'A ghost cursor drifts slowly around the scene when nobody is moving the pointer (after 2.5 s), so mouse effects stay alive — on phones, or everywhere.'),
         (scene.idle || 'touch') !== 'off' ? field({ label: 'Ghost speed', type: 'range', min: 0.1, max: 4, step: 0.05, def: 1 }, null,
           function () { return scene.idleSpeed == null ? 1 : scene.idleSpeed; }, function (v) { scene.idleSpeed = v; }) : null,
+        row('Mouse cursor', toggleCtl(scene.mouseCursor !== false, function (v, c) { scene.mouseCursor = v ? undefined : false; changed(c); }), 'On: effects react to the mouse (or a finger). Off: only cursor layers move them — the mouse can still grab physical objects, hover and click.'),
+        row('Hide mouse', toggleCtl(!!scene.hideCursor, function (v, c) { scene.hideCursor = v || undefined; changed(c); $('#frame').style.cursor = playMode && v ? 'none' : ''; }), 'The pointer disappears while it is over the scene, e.g. when a layer sticks to the cursor as a custom one. (In the editor it only hides in Play mode.)'),
         el('div', { class: 'note', style: 'margin-top:6px', text: 'Scroll over the canvas to preview scroll-driven settings. Settings driven by sound ask for the microphone.' })
       ]),
+      hasPhysics() ? section('Physics world', [
+        field({ label: 'Gravity', type: 'range', min: 0, max: 3, step: 0.01, def: 1, title: '1 = like dropping things on a desk. 0 floats (objects drift once thrown).' }, null,
+          function () { return scene.physGravity == null ? 1 : scene.physGravity; }, function (v) { scene.physGravity = v; }),
+        field({ label: 'Gravity angle', type: 'range', min: 0, max: 360, step: 1, def: 90, title: '90 = down, 270 = up, 0 = right.' }, null,
+          function () { return scene.physGravityDir == null ? 90 : scene.physGravityDir; }, function (v) { scene.physGravityDir = v; }),
+        row('Walls', selectCtl([['Floor and sides', 'sides'], ['All four edges', 'box'], ['Floor only', 'floor'], ['None (fall out of frame)', 'none']], scene.physWalls || 'sides', function (v) { scene.physWalls = v; changed(true); }), 'Which frame edges objects collide with. With Floor and sides, objects can start above the frame and drop in.'),
+        row('Walls at', selectCtl([['Edges of the window / embed', 'visible'], ['Edges of the frame', 'frame']], scene.physBounds || 'visible', function (v) { scene.physBounds = v === 'visible' ? undefined : v; changed(true); }), 'On a website the frame can be cropped (Crop to fill) or have extra space around it (Fit everything). Window edges: objects rest on the bottom of what visitors actually see. Frame edges: on the frame’s own edges, even where they’re cut off. In the editor both look the same.'),
+                field({ label: 'Mouse push', type: 'range', min: 0, max: 300, step: 1, def: 0, title: 'The pointer becomes an invisible ball of this radius that shoves objects out of its way. 0 = off (objects can still be grabbed).' }, null,
+          function () { return scene.physMouse || 0; }, function (v) { scene.physMouse = v || undefined; }),
+        el('div', { class: 'btn-row', style: 'margin:4px 0 6px' }, el('button', { class: 'btn small', text: 'Drop again', title: 'Put every object back where you placed it', onclick: function () { R.restart(); } }))
+      ]) : '',
       paletteSection(),
       section('Fonts', [
         scene.fonts.length ? el('div', { class: 'note', text: scene.fonts.map(function (f) { return f.family; }).join(', ') }) : el('div', { class: 'note', text: 'Upload .ttf / .otf / .woff2 files to use your own typefaces. They are embedded in exports.' }),
@@ -7797,6 +8727,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
       ]),
       section('Shortcuts', [el('div', { class: 'keys', html: [
         '<kbd>Space</kbd><span>Play / pause</span>',
+        '<kbd>P</kbd><span>Play mode: grab objects, try links (<kbd>Esc</kbd> to leave)</span>',
         '<kbd>Ctrl Z</kbd><span>Undo (<kbd>Shift</kbd> to redo) — clock button for full history</span>',
         '<kbd>Ctrl D</kbd><span>Duplicate layer</span>',
         '<kbd>Del</kbd><span>Delete layer</span>',
@@ -7923,7 +8854,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
     if (isContent(l)) {
       var b = R.bbox(l.id); if (!b) return null;
       var o = R.offset(l);
-      return { x: b.x + o[0] * scene.width, y: b.y - o[1] * scene.height, w: b.w, h: b.h, rot: b.rot };
+      return { x: b.x + o[0] * scene.width, y: b.y - o[1] * scene.height, w: b.w, h: b.h, rot: (b.rot || 0) + R.extraRot(l) };
     }
     if (l.type !== 'group') return null;
     var go = R.offset(l), x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
@@ -8023,7 +8954,8 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
     var cands = [];
     var visit = function (list, hidden) {
       list.forEach(function (l) {
-        var h = hidden || l.visible === false || l.locked;
+        // Layers stuck to the cursor are always under it, so clicks go through them (select them in the layer list).
+        var h = hidden || l.visible === false || l.locked || l.stick;
         if (l.type === 'group') visit(l.children, h);
         else if (isContent(l) && !h) cands.push(l);
       });
@@ -8073,7 +9005,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
     }, { passive: false });
     frame.addEventListener('pointerdown', function (e) {
       if (e.button !== 0) return;
-      if (phoneTest) return; // in phone test the canvas is touched, not edited
+      if (phoneTest || playMode) return; // in phone test / play the canvas is used, not edited
       var p = toDesign(e);
       var handle = e.target.classList.contains('handle');
       var l;
@@ -8264,12 +9196,13 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
   function runtimeSource() { return $('#facet-runtime').textContent.trim(); }
   /* ---- Smaller player: drop effects and 3D code the scene doesn't use, and strip comments/indentation ---- */
   function usedFeatures(s) {
-    var f = { fx: {}, model: false, extrude: false };
+    var f = { fx: {}, model: false, extrude: false, physics: false };
     var see = function (l) {
       if (l.type === 'effect') f.fx[l.effect] = 1;
       if (l.type === 'model') f.model = true;
       if (l.extrude) f.extrude = true;
-      if (l.bp) Object.keys(l.bp).forEach(function (k) { if (l.bp[k].extrude) f.extrude = true; });
+      if (l.physics) f.physics = true;
+      if (l.bp) Object.keys(l.bp).forEach(function (k) { if (l.bp[k].extrude) f.extrude = true; if (l.bp[k].physics) f.physics = true; });
     };
     F.walk(s.layers || [], see);
     return f;
@@ -8277,7 +9210,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
   function trimRuntime(src, s) {
     var f = usedFeatures(s);
     src = src.replace(/[ \t]*\/\/@fx:(\w+)\n[\s\S]*?[ \t]*\/\/@end\n/g, function (m, k) { return f.fx[k] ? m : ''; });
-    src = src.replace(/[ \t]*\/\/@part:(\w+)\n[\s\S]*?[ \t]*\/\/@end\n/g, function (m, k) { return (k === 'model' ? f.model : k === 'extrude' ? f.extrude : true) ? m : ''; });
+    src = src.replace(/[ \t]*\/\/@part:(\w+)\n[\s\S]*?[ \t]*\/\/@end\n/g, function (m, k) { return (k === 'model' ? f.model : k === 'extrude' ? f.extrude : k === 'physics' ? f.physics : true) ? m : ''; });
     return src;
   }
   /** Conservative minify: whole-line comments, comment blocks and indentation only (string contents are never touched). */
@@ -9393,7 +10326,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
       'addEventListener("resize",layout);layout();';
     return '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Preview</title><style>' + css + '</style></head><body>' +
       '<div id="bar"><b style="margin-right:8px">Live preview</b><button data-m="fit">Fill window</button><button data-m="phone">Phone</button><button data-m="tablet">Tablet</button><button data-m="laptop">Laptop</button><button data-m="desktop">Desktop</button>' +
-      '<button id="pg" title="Put the scene in a scrolling page, to try scroll and in-view triggers">In a page</button><button id="rs">Restart</button><span class="sp"></span><span id="info"></span></div>' +
+      '<button id="pg" title="Put the scene in a scrolling page, to try scroll and in-view triggers">In a page</button><button id="rs" title="Start the scene over, as if the page had just loaded (it also starts over when the size changes)">Restart</button><span class="sp"></span><span id="info"></span></div>' +
       '<div id="stage"><div id="dev" class="fit"><div class="fill">Page content above</div><div id="scene"></div><div class="fill">Page content below</div></div></div>' +
       '<script>' + runtimeSource() + '<\/script><script>' + js + '<\/script></body></html>';
   }
@@ -9686,6 +10619,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
   function bindKeys() {
     document.addEventListener('keydown', function (e) {
       var mod = e.ctrlKey || e.metaKey;
+      if (e.key === 'Escape' && playMode && !openMenuEl && !modalEl) { togglePlay(false); return; }
       if (e.key === 'Escape') { if (openMenuEl) closeMenu(); else if (modalEl) closeModal(); else if (!isTyping(e) && selectedId) select(null); return; }
       if (mod && (e.key === 's' || e.key === 'S')) { e.preventDefault(); saveCurrent(); return; }
       if (isTyping(e) || modalEl) return;
@@ -9693,6 +10627,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
       if (mod && (e.key === 'y' || e.key === 'Y')) { e.preventDefault(); redo(); return; }
       if (mod && (e.key === 'd' || e.key === 'D')) { e.preventDefault(); if (selectedId) duplicateLayer(selectedId); return; }
       if (e.key === ' ') { e.preventDefault(); setPlaying(!R.playing); return; }
+      if (!mod && !e.altKey && (e.key === 'p' || e.key === 'P')) { e.preventDefault(); togglePlay(); return; }
       if ((e.key === 'Delete' || e.key === 'Backspace') && selectedId) { e.preventDefault(); deleteSelected(); return; }
       if (mod && e.altKey && (e.code === 'KeyM')) { e.preventDefault(); groupSelection(true); return; }
       if (mod && (e.key === 'g' || e.key === 'G')) { e.preventDefault(); if (e.shiftKey) ungroup(selectedId); else groupSelection(false); return; }
@@ -9735,7 +10670,8 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
     $('#logo').innerHTML = IC.logo;
     master = scene = await loadInitial();
     try {
-      R = new F.Renderer($('#view'), scene, { reducedMotion: false, dprCap: 2, breakpoint: null, adaptive: false });
+      R = new F.Renderer($('#view'), scene, { reducedMotion: false, dprCap: 2, breakpoint: null, adaptive: false, resetOnResize: false });
+      R.dragBodies = false; R.showCursor = true; R._pointerStyle();
     } catch (e) {
       document.body.appendChild(el('div', { class: 'fatal' }, el('div', null,
         el('h2', { text: 'WebGL2 isn’t available' }),
