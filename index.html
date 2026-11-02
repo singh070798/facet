@@ -8072,7 +8072,7 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
     var w = { id: '__world', type: 'world', name: 'Physics world' };
     Object.defineProperty(w, 'mods', { enumerable: true, configurable: true,
       get: function () { return scene.worldMods; },
-      set: function (v) { if (v && Object.keys(v).length) scene.worldMods = v; else delete scene.worldMods; } });
+      set: function (v) { if (v) scene.worldMods = v; else delete scene.worldMods; } });
     return w;
   }
   function hasPhysics() { var f = false; walk(scene.layers, function (l) { if (l.physics) f = true; }); return f; }
@@ -9146,7 +9146,11 @@ td.num { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; color
     var r = anchor.getBoundingClientRect();
     var left = Math.min(r.left, innerWidth - m.offsetWidth - 8);
     m.style.left = Math.max(8, left) + 'px';
-    m.style.top = (r.bottom + 6) + 'px';
+    // Below the button, or above it when there isn't room (settings near the bottom of the window), always on screen.
+    var h = m.offsetHeight, top = r.bottom + 6;
+    if (top + h > innerHeight - 8) top = r.top - h - 6 >= 8 ? r.top - h - 6 : Math.max(8, innerHeight - h - 8);
+    m.style.top = top + 'px';
+    if (h > innerHeight - 16) { m.style.maxHeight = (innerHeight - 16) + 'px'; m.style.overflowY = 'auto'; }
     openMenuEl = m;
     var b = m.querySelector('button'); if (b) b.focus();
     setTimeout(function () { document.addEventListener('pointerdown', function h(e) { if (!m.contains(e.target)) { closeMenu(); } document.removeEventListener('pointerdown', h); }); }, 0);
